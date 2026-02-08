@@ -43,7 +43,7 @@ export default function PreviewPage() {
       <div className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 shrink-0 relative z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <Link href="/dashboard">
-            <Button variant="ghost" size="sm" icon={<ArrowLeft className="h-4 w-4" />}>
+            <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />}>
               Back
             </Button>
           </Link>
@@ -84,10 +84,10 @@ export default function PreviewPage() {
               Customize
             </Button>
           </Link>
-          <Button variant="outline" size="sm" icon={<Share2 className="h-4 w-4" />}>
+          <Button variant="outline" size="sm" leftIcon={<Share2 className="h-4 w-4" />}>
             Share
           </Button>
-          <Button variant="primary" size="sm" icon={<Rocket className="h-4 w-4" />}>
+          <Button variant="primary" size="sm" leftIcon={<Rocket className="h-4 w-4" />}>
             Publish Live
           </Button>
         </div>
@@ -97,13 +97,13 @@ export default function PreviewPage() {
       <div className="flex-1 bg-slate-100 dark:bg-slate-950 overflow-hidden relative flex items-center justify-center p-8 bg-dot-pattern">
         <div
           className={`bg-white shadow-2xl transition-all duration-500 ease-in-out border border-slate-200 overflow-hidden relative group ${viewMode === 'desktop' ? 'w-full h-full max-w-[1200px] rounded-lg' :
-              viewMode === 'tablet' ? 'w-[768px] h-[1024px] max-h-full rounded-2xl border-8 border-slate-800' :
-                'w-[375px] h-[812px] max-h-full rounded-3xl border-8 border-slate-800'
+            viewMode === 'tablet' ? 'w-[768px] h-[1024px] max-h-full rounded-2xl border-8 border-slate-800' :
+              'w-[375px] h-[812px] max-h-full rounded-3xl border-8 border-slate-800'
             }`}
         >
           {/* Live Preview Overlay (Only for visualization in dashboard) */}
           <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="secondary" size="sm" icon={<ExternalLink className="h-4 w-4" />}>
+            <Button variant="secondary" size="sm" leftIcon={<ExternalLink className="h-4 w-4" />}>
               Open in New Tab
             </Button>
           </div>

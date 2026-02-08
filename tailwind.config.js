@@ -247,6 +247,9 @@ module.exports = {
                 'dashboard': '1440px',
                 'text': '720px',
             },
+            scale: {
+                '102': '1.02',
+            },
         },
     },
     plugins: [require('tailwindcss-animate')],

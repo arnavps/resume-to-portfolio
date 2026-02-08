@@ -62,8 +62,8 @@ export default function CustomizePage() {
                                         key={t.id}
                                         onClick={() => setTemplate(t.id)}
                                         className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${template === t.id
-                                                ? 'border-indigo-500 ring-2 ring-indigo-500/20'
-                                                : 'border-slate-200 hover:border-indigo-200'
+                                            ? 'border-indigo-500 ring-2 ring-indigo-500/20'
+                                            : 'border-slate-200 hover:border-indigo-200'
                                             }`}
                                     >
                                         <div className="aspect-video bg-slate-100 relative">
@@ -116,8 +116,8 @@ export default function CustomizePage() {
                                             key={f.id}
                                             onClick={() => setFontPair(f.id)}
                                             className={`p-3 rounded-lg border cursor-pointer flex items-center justify-between transition-all ${fontPair === f.id
-                                                    ? 'border-indigo-500 bg-indigo-50/50'
-                                                    : 'border-slate-200 hover:border-slate-300'
+                                                ? 'border-indigo-500 bg-indigo-50/50'
+                                                : 'border-slate-200 hover:border-slate-300'
                                                 }`}
                                         >
                                             <span className={`text-sm ${f.class}`}>{f.name}</span>
@@ -137,7 +137,7 @@ export default function CustomizePage() {
                     </Tabs>
                 </div>
                 <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                    <Button className="w-full" size="lg" variant="primary" icon={<Save className="h-4 w-4" />}>
+                    <Button className="w-full" size="lg" variant="primary" leftIcon={<Save className="h-4 w-4" />}>
                         Save Changes
                     </Button>
                 </div>
@@ -181,8 +181,8 @@ export default function CustomizePage() {
                 <div className="flex-1 overflow-auto flex items-center justify-center p-8 bg-dot-pattern">
                     <div
                         className={`bg-white shadow-2xl transition-all duration-500 ease-in-out border border-slate-200 overflow-hidden ${deviceView === 'desktop' ? 'w-full h-full max-w-[1200px] rounded-lg' :
-                                deviceView === 'tablet' ? 'w-[768px] h-[1024px] rounded-2xl border-8 border-slate-800' :
-                                    'w-[375px] h-[812px] rounded-3xl border-8 border-slate-800'
+                            deviceView === 'tablet' ? 'w-[768px] h-[1024px] rounded-2xl border-8 border-slate-800' :
+                                'w-[375px] h-[812px] rounded-3xl border-8 border-slate-800'
                             }`}
                     >
                         {/* Mock Content for Preview */}
@@ -200,7 +200,7 @@ export default function CustomizePage() {
                                         Hire Me
                                     </div>
                                     <h1 className={`text-4xl font-bold mb-4 ${fontPair === 'serif' ? 'font-serif' :
-                                            fontPair === 'mono' ? 'font-mono' : 'font-sans'
+                                        fontPair === 'mono' ? 'font-mono' : 'font-sans'
                                         }`}>
                                         Alex Developer
                                     </h1>
