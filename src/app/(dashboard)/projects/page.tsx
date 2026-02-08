@@ -1,0 +1,152 @@
+'use client';
+
+import { useState } from 'react';
+import { Plus, Search, Folder, MoreVertical, Github, Globe, Calendar } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+export default function ProjectsPage() {
+    const [view, setView] = useState<'grid' | 'list'>('grid');
+    const [search, setSearch] = useState('');
+
+    // Mock data for now
+    const projects = [
+        {
+            id: 1,
+            title: 'E-commerce Platform',
+            description: 'A full-stack e-commerce solution with Next.js and Stripe.',
+            tags: ['Next.js', 'TypeScript', 'Stripe'],
+            updatedAt: '2 days ago',
+            status: 'Published',
+            image: '/projects/ecommerce.png' // Placeholder
+        },
+        {
+            id: 2,
+            title: 'Task Management App',
+            description: 'Real-time collaboration tool for remote teams.',
+            tags: ['React', 'Firebase', 'Tailwind'],
+            updatedAt: '1 week ago',
+            status: 'Draft',
+            image: '/projects/task.png'
+        },
+        {
+            id: 3,
+            title: 'Fitness Tracker API',
+            description: 'RESTful API for tracking workouts and nutrition.',
+            tags: ['Node.js', 'Express', 'PostgreSQL'],
+            updatedAt: '3 weeks ago',
+            status: 'Published',
+            image: '/projects/api.png'
+        }
+    ];
+
+    const filteredProjects = projects.filter(p =>
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return (
+        <div className="space-y-8 animate-fade-in-up">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Projects</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2">
+                        Manage your portfolio projects and case studies.
+                    </p>
+                </div>
+                <Button size="lg" variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
+                    Add Project
+                </Button>
+            </div>
+
+            <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                        placeholder="Search projects..."
+                        className="pl-9"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {filteredProjects.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProjects.map((project) => (
+                        <Card key={project.id} className="group overflow-hidden border-slate-200 hover:border-indigo-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                            <div className="h-40 bg-slate-100 relative group-hover:scale-105 transition-transform duration-500">
+                                {/* Placeholder for project image */}
+                                <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                                    <Folder className="h-10 w-10 opacity-20" />
+                                </div>
+                                <div className="absolute top-4 right-4">
+                                    <Badge variant={project.status === 'Published' ? 'success' : 'neutral'}>
+                                        {project.status}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <CardHeader className="p-5">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                            {project.title}
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" /> Updated {project.updatedAt}
+                                        </p>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-5 pt-0">
+                                <p className="text-slate-600 text-sm line-clamp-2 mb-4">
+                                    {project.description}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {project.tags.map(tag => (
+                                        <Badge key={tag} variant="secondary" className="font-normal">
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </CardContent>
+                            <CardFooter className="p-5 pt-0 mt-4 flex gap-2">
+                                <Button variant="outline" size="sm" className="flex-1" icon={<Github className="h-3 w-3" />}>
+                                    Code
+                                </Button>
+                                <Button variant="outline" size="sm" className="flex-1" icon={<Globe className="h-3 w-3" />}>
+                                    Demo
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 mb-4">
+                        <Search className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-900">No projects found</h3>
+                    <p className="text-slate-500 mt-1">
+                        Try adjusting your search terms or add a new project.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+}

@@ -5,32 +5,33 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
-  Inbox,
   Users,
   Calendar,
   BarChart3,
   FolderOpen,
   Settings,
   HelpCircle,
-  Plus,
   FileText,
   Palette,
   Eye,
-  Upload
+  Sparkles
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 const menuItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Inbox', href: '/dashboard/inbox', icon: Inbox, badge: 7 },
+  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Connect', href: '/dashboard/connect', icon: Users },
+  { name: 'Generate', href: '/dashboard/generate', icon: Sparkles, highlight: true },
 ]
 
 const workspaceItems = [
-  { name: 'Connect Accounts', href: '/dashboard/connect', icon: Users },
-  { name: 'Generate Portfolio', href: '/dashboard/generate', icon: Plus },
   { name: 'Projects', href: '/dashboard/projects', icon: FolderOpen },
   { name: 'Experience', href: '/dashboard/experience', icon: Calendar },
   { name: 'Skills', href: '/dashboard/skills', icon: FileText },
   { name: 'Customize', href: '/dashboard/customize', icon: Palette },
+]
+
+const analysisItems = [
   { name: 'Preview', href: '/dashboard/preview', icon: Eye },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
 ]
@@ -43,90 +44,137 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 bg-lime-100 min-h-screen p-4 flex flex-col">
-      <div className="flex items-center gap-2 mb-8 px-2">
-        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold">P</span>
-        </div>
-        <span className="font-bold text-lg">Portfolio</span>
+    <aside className="w-72 bg-slate-900 text-slate-300 min-h-screen flex flex-col border-r border-slate-800 shadow-xl transition-all duration-300">
+      {/* Brand Header */}
+      <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative w-8 h-8 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg group-hover:shadow-indigo-500/25 transition-all duration-300">
+            <span className="text-white font-bold text-lg">F</span>
+          </div>
+          <span className="font-bold text-lg text-white tracking-tight group-hover:text-indigo-200 transition-colors">Folio.ai</span>
+        </Link>
       </div>
 
-      <nav className="flex-1">
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-600 mb-2 px-2">
-            MAIN MENU
+      <div className="flex-1 overflow-y-auto py-6 px-4 custom-scrollbar">
+        {/* Main Menu */}
+        <div className="mb-8">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
+            Main Menu
           </h3>
-          {menuItems.map((item) => (
-            <SidebarItem
-              key={item.href}
-              item={item}
-              isActive={pathname === item.href}
-            />
-          ))}
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-600 mb-2 px-2">
-            WORKSPACE
-          </h3>
-          {workspaceItems.map((item) => (
-            <SidebarItem
-              key={item.href}
-              item={item}
-              isActive={pathname === item.href}
-            />
-          ))}
-        </div>
-
-        <div>
-          <h3 className="text-xs font-semibold text-gray-600 mb-2 px-2">
-            GENERAL
-          </h3>
-          {generalItems.map((item) => (
-            <SidebarItem
-              key={item.href}
-              item={item}
-              isActive={pathname === item.href}
-            />
-          ))}
-        </div>
-      </nav>
-
-      <div className="mt-auto">
-        <div className="bg-black text-white rounded-xl p-4 text-center">
-          <div className="w-10 h-10 bg-lime-400 rounded-full flex items-center justify-center mx-auto mb-3">
-            <HelpCircle className="w-6 h-6 text-black" />
+          <div className="space-y-1">
+            {menuItems.map((item) => (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href}
+              />
+            ))}
           </div>
-          <p className="text-sm font-semibold mb-2">Need Help?</p>
-          <button className="bg-lime-400 text-black px-4 py-2 rounded-lg text-sm font-semibold w-full hover:bg-lime-500 transition">
-            Go to help center
-          </button>
         </div>
+
+        {/* Workspace */}
+        <div className="mb-8">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
+            Content Manager
+          </h3>
+          <div className="space-y-1">
+            {workspaceItems.map((item) => (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Analysis */}
+        <div className="mb-8">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
+            Analysis & View
+          </h3>
+          <div className="space-y-1">
+            {analysisItems.map((item) => (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* General */}
+        <div>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">
+            System
+          </h3>
+          <div className="space-y-1">
+            {generalItems.map((item) => (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Profile/Logout */}
+      <div className="p-4 border-t border-slate-800 bg-slate-950/30">
+        <Link
+          href="/help"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all group"
+        >
+          <HelpCircle className="w-5 h-5 group-hover:text-indigo-400 transition-colors" />
+          <span className="font-medium">Help & Support</span>
+        </Link>
       </div>
     </aside>
   )
 }
 
-function SidebarItem({ item, isActive }: { 
-  item: any; 
-  isActive: boolean 
+function SidebarItem({ item, isActive }: {
+  item: any;
+  isActive: boolean
 }) {
   return (
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors",
-        isActive 
-          ? "bg-white shadow-sm" 
-          : "hover:bg-lime-50"
+        "flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-all duration-200 group relative",
+        isActive
+          ? "bg-indigo-500/10 text-indigo-300"
+          : "hover:bg-slate-800 hover:text-white text-slate-400",
+        // @ts-ignore
+        item.highlight && !isActive && "text-indigo-400 hover:bg-indigo-500/10 hover:text-indigo-300"
       )}
     >
-      <item.icon className="w-5 h-5" />
+      {isActive && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-500 rounded-r-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+      )}
+
+      <item.icon className={cn(
+        "w-5 h-5 transition-colors",
+        isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-indigo-400",
+        // @ts-ignore
+        item.highlight && "text-indigo-400"
+      )} />
+
       <span className="flex-1 font-medium">{item.name}</span>
+
+      {/* @ts-ignore */}
+      {item.highlight && (
+        <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
+      )}
+
+      {/* @ts-ignore */}
       {item.badge && (
-        <span className="bg-black text-white text-xs px-2 py-0.5 rounded-full">
+        <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+          {/* @ts-ignore */}
           {item.badge}
-        </span>
+        </Badge>
       )}
     </Link>
   )

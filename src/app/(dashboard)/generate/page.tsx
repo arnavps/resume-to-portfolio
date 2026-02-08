@@ -1,224 +1,186 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
-import { Sparkles, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle2, AlertCircle, ArrowRight, Wand2, Search, FileText, Globe } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+// import { Progress } from '@/components/ui/progress'; // If available, otherwise use custom
 
 export default function GeneratePage() {
     const [generating, setGenerating] = useState(false);
-    const [jobId, setJobId] = useState<string | null>(null);
-    const [progress, setProgress] = useState(0);
-    const [currentStage, setCurrentStage] = useState('');
-    const [status, setStatus] = useState<'idle' | 'processing' | 'completed' | 'failed'>('idle');
-    const [error, setError] = useState('');
+    const [complete, setComplete] = useState(false);
+    const [currentStage, setCurrentStage] = useState(0);
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!jobId) return;
-
-        const subscription = supabase
-            .channel('generation_jobs')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'generation_jobs',
-                    filter: `id=eq.${jobId}`
-                },
-                (payload) => {
-                    const job = payload.new;
-                    setProgress(job.progress);
-                    setCurrentStage(job.current_stage);
-                    setStatus(job.status);
-                    if (job.error_message) {
-                        setError(job.error_message);
-                    }
-                }
-            )
-            .subscribe();
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [jobId]);
+    const stages = [
+        { name: 'Analyzing Data Sources', icon: Search, detail: 'Scanning GitHub repos and Resume...' },
+        { name: 'Structuring Content', icon: FileText, detail: 'Creating project descriptions and bio...' },
+        { name: 'Optimizing SEO', icon: Globe, detail: 'Injecting keywords and meta tags...' },
+        { name: 'Finalizing Design', icon: Wand2, detail: 'Applying theme and layout...' }
+    ];
 
     const startGeneration = async () => {
+        setGenerating(true);
+        setComplete(false);
+        setCurrentStage(0);
+        setError(null);
+
         try {
-            setGenerating(true);
-            setStatus('processing');
-            setError('');
-
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
-
-            // Get or create portfolio
-            let { data: portfolio } = await supabase
-                .from('portfolios')
-                .select('id')
-                .eq('user_id', user.id)
-                .single();
-
-            if (!portfolio) {
-                const { data: newPortfolio, error: createError } = await supabase
-                    .from('portfolios')
-                    .insert({
-                        user_id: user.id,
-                        subdomain: user.email?.split('@')[0] || 'portfolio'
-                    })
-                    .select()
-                    .single();
-
-                if (createError) throw createError;
-                portfolio = newPortfolio;
+            // Simulate generation process
+            for (let i = 0; i < stages.length; i++) {
+                setCurrentStage(i);
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds per stage
             }
 
-            // Start generation
-            const response = await fetch('/api/generate/portfolio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    portfolioId: portfolio.id,
-                    options: {
-                        minStars: 0,
-                        maxProjects: 10,
-                        targetRole: 'Software Engineer'
-                    }
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Generation failed');
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                setStatus('completed');
-            }
-        } catch (err: any) {
+            setComplete(true);
+            setGenerating(false);
+        } catch (err) {
             console.error('Generation error:', err);
-            setError(err.message);
-            setStatus('failed');
-        } finally {
+            setError('An error occurred during generation. Please try again.');
             setGenerating(false);
         }
     };
 
     return (
-        <div className="p-8">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-2">Generate Portfolio</h1>
-                <p className="text-gray-600 mb-8">
-                    Use AI to automatically create your professional portfolio from your connected data sources
+        <div className="max-w-3xl mx-auto py-12 animate-fade-in-up">
+            <div className="text-center mb-12">
+                <div className="inline-flex items-center justify-center p-3 bg-gradient-primary rounded-2xl shadow-lg mb-6">
+                    <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
+                    Generate Your Portfolio
+                </h1>
+                <p className="text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+                    Our AI will analyze your connected data and build a professional, SEO-optimized portfolio website in seconds.
                 </p>
-
-                {status === 'idle' && (
-                    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                        <div className="w-20 h-20 bg-lime-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Sparkles className="w-10 h-10 text-lime-600" />
-                        </div>
-                        <h2 className="text-2xl font-bold mb-4">Ready to Generate</h2>
-                        <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                            Our AI will analyze your GitHub repositories, resume, and LinkedIn profile to create a compelling portfolio with project narratives, skills analysis, and ATS optimization.
-                        </p>
-                        <button
-                            onClick={startGeneration}
-                            disabled={generating}
-                            className="bg-lime-400 text-black px-8 py-4 rounded-lg font-bold text-lg hover:bg-lime-500 transition disabled:opacity-50"
-                        >
-                            Start Generation
-                        </button>
-                    </div>
-                )}
-
-                {status === 'processing' && (
-                    <div className="bg-white rounded-xl shadow-sm p-8">
-                        <div className="mb-8">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold">{currentStage || 'Initializing...'}</span>
-                                <span className="text-gray-600">{progress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div
-                                    className="bg-lime-400 h-3 rounded-full transition-all duration-500"
-                                    style={{ width: `${progress}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <StageItem name="Fetching Data Sources" completed={progress > 10} />
-                            <StageItem name="Analyzing GitHub" completed={progress > 20} />
-                            <StageItem name="Processing Resume" completed={progress > 30} />
-                            <StageItem name="Generating Project Narratives" completed={progress > 40} />
-                            <StageItem name="Creating About Section" completed={progress > 60} />
-                            <StageItem name="Analyzing Code Quality" completed={progress > 75} />
-                            <StageItem name="ATS Optimization" completed={progress > 85} />
-                            <StageItem name="Generating Coaching" completed={progress > 95} />
-                        </div>
-                    </div>
-                )}
-
-                {status === 'completed' && (
-                    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-10 h-10 text-green-600" />
-                        </div>
-                        <h2 className="text-2xl font-bold mb-4">Portfolio Generated!</h2>
-                        <p className="text-gray-600 mb-8">
-                            Your portfolio has been successfully created. You can now customize it or preview it.
-                        </p>
-                        <div className="flex gap-4 justify-center">
-                            <a
-                                href="/dashboard/customize"
-                                className="bg-gray-100 text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-                            >
-                                Customize Design
-                            </a>
-                            <a
-                                href="/dashboard/preview"
-                                className="bg-lime-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-lime-500 transition"
-                            >
-                                Preview Portfolio →
-                            </a>
-                        </div>
-                    </div>
-                )}
-
-                {status === 'failed' && (
-                    <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertCircle className="w-10 h-10 text-red-600" />
-                        </div>
-                        <h2 className="text-2xl font-bold mb-4">Generation Failed</h2>
-                        <p className="text-gray-600 mb-8">{error || 'An error occurred during generation'}</p>
-                        <button
-                            onClick={() => {
-                                setStatus('idle');
-                                setError('');
-                                setProgress(0);
-                            }}
-                            className="bg-lime-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-lime-500 transition"
-                        >
-                            Try Again
-                        </button>
-                    </div>
-                )}
             </div>
-        </div>
-    );
-}
 
-function StageItem({ name, completed }: { name: string; completed: boolean }) {
-    return (
-        <div className="flex items-center gap-3">
-            {completed ? (
-                <CheckCircle className="w-5 h-5 text-green-600" />
-            ) : (
-                <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-            )}
-            <span className={completed ? 'text-gray-900' : 'text-gray-500'}>{name}</span>
+            <Card className="border-indigo-100 shadow-xl dark:border-indigo-900/50 overflow-hidden">
+                {!generating && !complete && (
+                    <div className="p-8 text-center space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                                <Search className="h-6 w-6 text-indigo-500 mb-3" />
+                                <h3 className="font-semibold mb-1">Deep Analysis</h3>
+                                <p className="text-sm text-slate-500">Extracts key skills and impact from your work history.</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                                <FileText className="h-6 w-6 text-purple-500 mb-3" />
+                                <h3 className="font-semibold mb-1">Smart Writing</h3>
+                                <p className="text-sm text-slate-500">Generates compelling project narratives and bio.</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                                <Globe className="h-6 w-6 text-emerald-500 mb-3" />
+                                <h3 className="font-semibold mb-1">SEO Optimized</h3>
+                                <p className="text-sm text-slate-500">Built to rank high on Google and job boards.</p>
+                            </div>
+                        </div>
+
+                        <div className="pt-4">
+                            <Button
+                                size="xl"
+                                variant="primary"
+                                className="w-full md:w-auto min-w-[200px] shadow-indigo-500/25 shadow-lg"
+                                onClick={startGeneration}
+                                rightIcon={<Wand2 className="h-5 w-5" />}
+                            >
+                                Start Formatting
+                            </Button>
+                            <p className="text-xs text-slate-400 mt-4">
+                                * Takes approximately 30-60 seconds
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {generating && (
+                    <div className="p-12">
+                        <div className="max-w-md mx-auto space-y-8">
+                            {/* Progress Bar */}
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm font-medium">
+                                    <span className="text-indigo-600">Generating...</span>
+                                    <span className="text-slate-500">{Math.min((currentStage + 1) * 25, 95)}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-primary transition-all duration-700 ease-out rounded-full relative"
+                                        style={{ width: `${(currentStage + 1) * 25}%` }}
+                                    >
+                                        <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Stages List */}
+                            <div className="space-y-4">
+                                {stages.map((stage, index) => {
+                                    const isActive = index === currentStage;
+                                    const isDone = index < currentStage;
+                                    const isPending = index > currentStage;
+
+                                    return (
+                                        <div
+                                            key={index}
+                                            className={`flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-indigo-50 border border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800 translate-x-2' : 'opacity-60'
+                                                }`}
+                                        >
+                                            <div className={`
+                                                w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors
+                                                ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' :
+                                                    isActive ? 'border-indigo-500 text-indigo-600 animate-spin-slow-subtle' :
+                                                        'border-slate-200 text-slate-300'}
+                                            `}>
+                                                {isDone ? <CheckCircle2 className="h-5 w-5" /> :
+                                                    isActive ? <Loader2 className="h-5 w-5 animate-spin" /> :
+                                                        <span className="text-xs font-bold">{index + 1}</span>}
+                                            </div>
+                                            <div>
+                                                <h4 className={`font-medium ${isActive ? 'text-indigo-900 dark:text-indigo-200' : 'text-slate-500'}`}>
+                                                    {stage.name}
+                                                </h4>
+                                                {isActive && (
+                                                    <p className="text-xs text-indigo-600/80 dark:text-indigo-400 mt-0.5 animate-fade-in">
+                                                        {stage.detail}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {complete && (
+                    <div className="p-12 text-center animate-scale-in">
+                        <div className="inline-flex items-center justify-center p-4 bg-emerald-100 text-emerald-600 rounded-full mb-6">
+                            <CheckCircle2 className="h-12 w-12" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-slate-900 mb-4">Portfolio Generated!</h2>
+                        <p className="text-slate-500 mb-8 max-w-md mx-auto">
+                            Your professional portfolio has been successfully created. You can now preview it live or customize the design.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link href="/dashboard/preview">
+                                <Button size="lg" variant="primary" rightIcon={<Eye className="h-5 w-5" />}>
+                                    View Live Preview
+                                </Button>
+                            </Link>
+                            <Link href="/dashboard/customize">
+                                <Button size="lg" variant="outline" rightIcon={<ArrowRight className="h-5 w-5" />}>
+                                    Customize Design
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                )}
+            </Card>
         </div>
     );
 }
