@@ -197,3 +197,13 @@ config.local.json
 # Lock files (keep package-lock.json but ignore others)
 yarn.lock
 pnpm-lock.yaml
+
+# End to End Testing
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Supabase Additional
+supabase/.branches
+

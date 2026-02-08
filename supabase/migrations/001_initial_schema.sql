@@ -299,6 +299,107 @@ ALTER TABLE public.ats_scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.portfolio_analytics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coaching_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.github_cache ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies (users can only access their own data)
+CREATE POLICY "Users can view own data" ON public.users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own data" ON public.users FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users can view own portfolios" ON public.portfolios FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own portfolios" ON public.portfolios FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own portfolios" ON public.portfolios FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own portfolios" ON public.portfolios FOR DELETE USING (auth.uid() = user_id);
+
+-- Public portfolio viewing (for published portfolios)
+CREATE POLICY "Anyone can view published portfolios" ON public.portfolios FOR SELECT USING (is_published = TRUE AND is_public = TRUE);
+CREATE POLICY "Anyone can view published projects" ON public.projects FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.portfolios 
+    WHERE portfolios.id = projects.portfolio_id 
+    AND portfolios.is_published = TRUE 
+    AND portfolios.is_public = TRUE
+  )
+);
+
+CREATE POLICY "Anyone can view published experiences" ON public.experiences FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.portfolios 
+    WHERE portfolios.id = experiences.portfolio_id 
+    AND portfolios.is_published = TRUE 
+    AND portfolios.is_public = TRUE
+  )
+);
+
+CREATE POLICY "Anyone can view published skills" ON public.skills FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.portfolios 
+    WHERE portfolios.id = skills.portfolio_id 
+    AND portfolios.is_published = TRUE 
+    AND portfolios.is_public = TRUE
+  )
+);
+
+CREATE POLICY "Anyone can view published education" ON public.education FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.portfolios 
+    WHERE portfolios.id = education.portfolio_id 
+    AND portfolios.is_published = TRUE 
+    AND portfolios.is_public = TRUE
+  )
+);
+
+CREATE POLICY "Anyone can view published content" ON public.portfolio_content FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.portfolios 
+    WHERE portfolios.id = portfolio_content.portfolio_id 
+    AND portfolios.is_published = TRUE 
+    AND portfolios.is_public = TRUE
+  )
+);
+
+-- Owner policies for other tables
+CREATE POLICY "Users can manage own projects" ON public.projects FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = projects.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own experiences" ON public.experiences FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = experiences.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own skills" ON public.skills FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = skills.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own education" ON public.education FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = education.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own certifications" ON public.certifications FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = certifications.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own content" ON public.portfolio_content FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = portfolio_content.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own data sources" ON public.data_sources FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own generation jobs" ON public.generation_jobs FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = generation_jobs.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can view own ATS scores" ON public.ats_scores FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = ats_scores.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can view own coaching" ON public.coaching_sessions FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.portfolios WHERE portfolios.id = coaching_sessions.portfolio_id AND portfolios.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can manage own preferences" ON public.user_preferences FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own cache" ON public.github_cache FOR ALL USING (auth.uid() = user_id);
+
+-- Public analytics insertion (for tracking)
+CREATE POLICY "Anyone can insert analytics" ON public.portfolio_analytics FOR INSERT WITH CHECK (TRUE);
 
 -- Functions and Triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -313,3 +414,14 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users FOR EACH RO
 CREATE TRIGGER update_portfolios_updated_at BEFORE UPDATE ON public.portfolios FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_experiences_updated_at BEFORE UPDATE ON public.experiences FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_portfolio_content_updated_at BEFORE UPDATE ON public.portfolio_content FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_data_sources_updated_at BEFORE UPDATE ON public.data_sources FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON public.user_preferences FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Insert default templates
+INSERT INTO public.templates (name, display_name, description, category, is_premium, is_active) VALUES
+  ('modern', 'Modern', 'Clean and contemporary design with smooth animations', 'modern', FALSE, TRUE),
+  ('minimal', 'Minimal', 'Typography-focused minimalist layout', 'minimal', FALSE, TRUE),
+  ('creative', 'Creative', 'Bold and artistic portfolio design', 'creative', TRUE, TRUE),
+  ('professional', 'Professional', 'Traditional corporate-style layout', 'professional', FALSE, TRUE),
+  ('startup', 'Startup', 'Dynamic tech-focused design', 'startup', TRUE, TRUE);

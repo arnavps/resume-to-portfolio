@@ -1,0 +1,36 @@
+import { cn } from '@/lib/utils';
+
+export function cn(...inputs: (string | undefined | null | boolean)[]): string {
+    return inputs.filter(Boolean).join(' ');
+}
+
+export function formatDate(date: string | Date): string {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+export function formatNumber(num: number): string {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+}
+
+export function slugify(text: string): string {
+    return text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+export function truncate(text: string, length: number): string {
+    if (text.length <= length) return text;
+    return text.substring(0, length) + '...';
+}
