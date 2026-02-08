@@ -2,78 +2,244 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #000000;
-  --lime-400: #a3e635;
-  --lime-50: #f7fee7;
-  --lime-100: #ecfccb;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #000000;
-    --foreground: #ffffff;
+    /* Neural Scale (Slate-like but sophisticated) */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    /* Slate 900 */
+
+    /* Card & Popover */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary: Indigo (#6366F1) */
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Emerald (#10B981) */
+    --secondary: 151 55% 41%;
+    /* Adjusted for better contrast/match */
+    --secondary-foreground: 0 0% 100%;
+
+    /* Accent: Amber (#F59E0B) for highlights */
+    --accent: 37 91% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Muted: Slate 50/100 */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Destructive */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Borders & Inputs */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 239 84% 67%;
+
+    --radius: 0.5rem;
+
+    /* Custom Gradient Variables */
+    --gradient-primary-from: #6366F1;
+    --gradient-primary-to: #8B5CF6;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 239 84% 67%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 151 55% 41%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 37 91% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 239 84% 67%;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer base {
+  * {
+    @apply border-border;
+  }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  @apply bg-slate-200 dark:bg-slate-700 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  @apply bg-slate-300 dark:bg-slate-600;
 }
 
-/* Animations */
-@keyframes fadeIn {
+/* Glassmorphism Utility */
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .glass {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Gradient Utilities */
+  .gradient-primary {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  }
+
+  /* Text Balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Grid Pattern Background */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .dark .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  }
+
+  /* Dot Pattern Background */
+  .bg-dot-pattern {
+    background-image: radial-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .dark .bg-dot-pattern {
+    background-image: radial-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  }
+}
+
+/* Animation Utilities */
+@keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
 }
 
-/* Loading spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+/* Skeleton Loading */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+
+  100% {
+    background-position: calc(200px + 100%) 0;
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(226, 232, 240, 0.2) 0px,
+      rgba(226, 232, 240, 0.5) 40px,
+      rgba(226, 232, 240, 0.2) 80px);
+  background-size: 200px 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg,
+      rgba(51, 65, 85, 0.2) 0px,
+      rgba(51, 65, 85, 0.5) 40px,
+      rgba(51, 65, 85, 0.2) 80px);
+}
+
+/* Focus Visible Styles */
+.focus-visible-ring:focus-visible {
+  @apply outline-none ring-4 ring-primary/20 ring-offset-2 ring-offset-background;
+}
+
+/* Interactive Card Hover */
+.card-interactive {
+  @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer;
+}
+
+/* Button Hover Scale */
+.button-scale {
+  @apply transition-transform duration-200 active:scale-95 hover:scale-102;
 }

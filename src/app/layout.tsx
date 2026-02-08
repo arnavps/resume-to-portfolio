@@ -1,12 +1,22 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+    subsets: ['latin'],
+    variable: '--font-inter',
+    display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+    subsets: ['latin'],
+    variable: '--font-jetbrains-mono',
+    display: 'swap',
+});
 
 export const metadata: Metadata = {
-    title: 'PortfolioGen - AI-Powered Portfolio Generator',
-    description: 'Turn your digital footprint into a stunning portfolio. Connect GitHub, upload your resume, and let AI create a professional portfolio website in minutes.',
+    title: 'Folio.ai - AI-Powered Portfolio Generator',
+    description: 'Turn your digital footprint into a stunning professional portfolio with AI. Connect GitHub, upload your resume, and get hired.',
 };
 
 export default function RootLayout({
@@ -15,8 +25,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
-            <body className={inter.className}>{children}</body>
+        <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+            <body className="font-sans antialiased min-h-screen bg-background text-foreground">
+                {children}
+            </body>
         </html>
     );
 }
