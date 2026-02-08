@@ -18,25 +18,33 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
-const menuItems = [
+interface SidebarItemType {
+  name: string;
+  href: string;
+  icon: any;
+  highlight?: boolean;
+  badge?: string;
+}
+
+const menuItems: SidebarItemType[] = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Connect', href: '/dashboard/connect', icon: Users },
   { name: 'Generate', href: '/dashboard/generate', icon: Sparkles, highlight: true },
 ]
 
-const workspaceItems = [
+const workspaceItems: SidebarItemType[] = [
   { name: 'Projects', href: '/dashboard/projects', icon: FolderOpen },
   { name: 'Experience', href: '/dashboard/experience', icon: Calendar },
   { name: 'Skills', href: '/dashboard/skills', icon: FileText },
   { name: 'Customize', href: '/dashboard/customize', icon: Palette },
 ]
 
-const analysisItems = [
+const analysisItems: SidebarItemType[] = [
   { name: 'Preview', href: '/dashboard/preview', icon: Eye },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
 ]
 
-const generalItems = [
+const generalItems: SidebarItemType[] = [
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 
@@ -136,7 +144,7 @@ export default function Sidebar() {
 }
 
 function SidebarItem({ item, isActive }: {
-  item: any;
+  item: SidebarItemType;
   isActive: boolean
 }) {
   return (
@@ -147,7 +155,6 @@ function SidebarItem({ item, isActive }: {
         isActive
           ? "bg-indigo-500/10 text-indigo-300"
           : "hover:bg-slate-800 hover:text-white text-slate-400",
-        // @ts-ignore
         item.highlight && !isActive && "text-indigo-400 hover:bg-indigo-500/10 hover:text-indigo-300"
       )}
     >
@@ -158,21 +165,17 @@ function SidebarItem({ item, isActive }: {
       <item.icon className={cn(
         "w-5 h-5 transition-colors",
         isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-indigo-400",
-        // @ts-ignore
         item.highlight && "text-indigo-400"
       )} />
 
       <span className="flex-1 font-medium">{item.name}</span>
 
-      {/* @ts-ignore */}
       {item.highlight && (
         <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
       )}
 
-      {/* @ts-ignore */}
       {item.badge && (
         <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-          {/* @ts-ignore */}
           {item.badge}
         </Badge>
       )}
