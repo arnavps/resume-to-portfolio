@@ -1,42 +1,43 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const safetySettings = [
-  {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-]
+    {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+];
 
 export const geminiPro = genAI.getGenerativeModel({
-  model: 'gemini-1.5-pro',
-  safetySettings,
-  generationConfig: {
-    temperature: 0.7,
-    topK: 40,
-    topP: 0.95,
-    maxOutputTokens: 8192,
-  },
-})
+    model: 'gemini-1.5-pro',
+    safetySettings,
+    generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 8192,
+    },
+});
 
 export const geminiFlash = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
-  safetySettings,
-  generationConfig: {
-    temperature: 0.9,
-    topK: 40,
-    topP: 0.95,
-    maxOutputTokens: 4096,
-  },
-})
+    model: 'gemini-1.5-flash',
+    safetySettings,
+    generationConfig: {
+        temperature: 0.9,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 4096,
+    },
+});
 
+// Fact-checking with grounding
 export async function generateWithGrounding(prompt: string, groundingData: any) {
-  const fullPrompt = `
+    const fullPrompt = `
 ${prompt}
 
 GROUNDING DATA (Use this to verify facts):
@@ -48,14 +49,15 @@ Instructions:
 3. Include a confidence score (0-1) for each generated section
 4. Flag any information that cannot be verified
 5. Return response in JSON format
-`
+`;
 
-  const result = await geminiPro.generateContent(fullPrompt)
-  return result.response.text()
+    const result = await geminiPro.generateContent(fullPrompt);
+    return result.response.text();
 }
 
+// Project narrative generation
 export async function generateProjectNarrative(projectData: any) {
-  const prompt = `
+    const prompt = `
 You are an expert technical writer helping developers showcase their work.
 
 Analyze this GitHub project and create a compelling narrative:
@@ -94,30 +96,32 @@ Return ONLY valid JSON in this exact format:
   "confidence_score": 0.85,
   "missing_context": ["..."]
 }
-`
+`;
 
-  try {
-    const result = await geminiPro.generateContent(prompt)
-    const text = result.response.text()
+    try {
+        const result = await geminiPro.generateContent(prompt);
+        const text = result.response.text();
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found in response')
+        // Extract JSON from response (handle markdown code blocks)
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found in response');
 
-    const parsed = JSON.parse(jsonMatch[0])
-    return parsed
-  } catch (error) {
-    console.error('Error generating project narrative:', error)
-    throw error
-  }
+        const parsed = JSON.parse(jsonMatch[0]);
+        return parsed;
+    } catch (error) {
+        console.error('Error generating project narrative:', error);
+        throw error;
+    }
 }
 
+// Career narrative generation
 export async function generateCareerNarrative(data: {
-  experiences: any[]
-  projects: any[]
-  skills: any[]
-  education: any[]
+    experiences: any[];
+    projects: any[];
+    skills: any[];
+    education: any[];
 }) {
-  const prompt = `
+    const prompt = `
 You are a professional career coach and storyteller.
 
 Create a compelling "About Me" section based on this professional data:
@@ -129,7 +133,7 @@ TOP PROJECTS:
 ${JSON.stringify(data.projects.slice(0, 5), null, 2)}
 
 SKILLS:
-${data.skills.map(s => s.skill_name).join(', ')}
+${data.skills.map((s: any) => s.skill_name).join(', ')}
 
 EDUCATION:
 ${JSON.stringify(data.education, null, 2)}
@@ -155,28 +159,29 @@ Return ONLY valid JSON:
   "meta_description": "...",
   "confidence_score": 0.9
 }
-`
+`;
 
-  try {
-    const result = await geminiPro.generateContent(prompt)
-    const text = result.response.text()
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found in response')
-    return JSON.parse(jsonMatch[0])
-  } catch (error) {
-    console.error('Error generating career narrative:', error)
-    throw error
-  }
+    try {
+        const result = await geminiPro.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found in response');
+        return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+        console.error('Error generating career narrative:', error);
+        throw error;
+    }
 }
 
+// Code quality analysis
 export async function analyzeCodeQuality(repoFiles: any[], languages: string[]) {
-  const codeSnippets = repoFiles
-    .filter((f: any) => f.content)
-    .slice(0, 5)
-    .map((f: any) => `// ${f.path}\n${f.content.substring(0, 500)}`)
-    .join('\n\n---\n\n')
+    const codeSnippets = repoFiles
+        .filter((f: any) => f.content)
+        .slice(0, 5)
+        .map((f: any) => `// ${f.path}\n${f.content.substring(0, 500)}`)
+        .join('\n\n---\n\n');
 
-  const prompt = `
+    const prompt = `
 You are a senior software engineer conducting a code review.
 
 Analyze these code samples:
@@ -203,28 +208,29 @@ Return JSON:
 }
 
 Score from 1-10. Be fair but constructive.
-`
+`;
 
-  try {
-    const result = await geminiFlash.generateContent(prompt)
-    const text = result.response.text()
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found')
-    return JSON.parse(jsonMatch[0])
-  } catch (error) {
-    console.error('Error analyzing code quality:', error)
-    return {
-      quality_score: 6.0,
-      strengths: [],
-      patterns_used: [],
-      recommendations: [],
-      confidence_score: 0.3
+    try {
+        const result = await geminiFlash.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+        console.error('Error analyzing code quality:', error);
+        return {
+            quality_score: 6.0,
+            strengths: [],
+            patterns_used: [],
+            recommendations: [],
+            confidence_score: 0.3
+        };
     }
-  }
 }
 
+// ATS Optimization
 export async function optimizeForATS(content: string, targetRole: string = 'Software Engineer') {
-  const prompt = `
+    const prompt = `
 You are an ATS (Applicant Tracking System) expert and recruiter.
 
 Analyze this portfolio content for ATS optimization targeting "${targetRole}" roles:
@@ -258,22 +264,23 @@ Return JSON:
 }
 
 Scores are 0-100. Be specific and actionable.
-`
+`;
 
-  try {
-    const result = await geminiPro.generateContent(prompt)
-    const text = result.response.text()
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found')
-    return JSON.parse(jsonMatch[0])
-  } catch (error) {
-    console.error('Error optimizing for ATS:', error)
-    throw error
-  }
+    try {
+        const result = await geminiPro.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+        console.error('Error optimizing for ATS:', error);
+        throw error;
+    }
 }
 
+// AI Coaching
 export async function generateCoachingSuggestions(portfolioData: any) {
-  const prompt = `
+    const prompt = `
 You are a career coach specializing in developer portfolios.
 
 Review this portfolio and provide actionable improvement suggestions:
@@ -303,42 +310,43 @@ Return JSON:
   "completeness": 0.75,
   "overall_feedback": "..."
 }
-`
+`;
 
-  try {
-    const result = await geminiPro.generateContent(prompt)
-    const text = result.response.text()
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found')
-    return JSON.parse(jsonMatch[0])
-  } catch (error) {
-    console.error('Error generating coaching:', error)
-    throw error
-  }
+    try {
+        const result = await geminiPro.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+        console.error('Error generating coaching:', error);
+        throw error;
+    }
 }
 
+// Batch generation with confidence tracking
 export async function generateMultiple(tasks: Array<{ type: string; data: any }>) {
-  const results = await Promise.allSettled(
-    tasks.map(async (task) => {
-      switch (task.type) {
-        case 'project':
-          return await generateProjectNarrative(task.data)
-        case 'career':
-          return await generateCareerNarrative(task.data)
-        case 'code-quality':
-          return await analyzeCodeQuality(task.data.files, task.data.languages)
-        case 'ats':
-          return await optimizeForATS(task.data.content, task.data.role)
-        default:
-          throw new Error(`Unknown task type: ${task.type}`)
-      }
-    })
-  )
+    const results = await Promise.allSettled(
+        tasks.map(async (task) => {
+            switch (task.type) {
+                case 'project':
+                    return await generateProjectNarrative(task.data);
+                case 'career':
+                    return await generateCareerNarrative(task.data);
+                case 'code-quality':
+                    return await analyzeCodeQuality(task.data.files, task.data.languages);
+                case 'ats':
+                    return await optimizeForATS(task.data.content, task.data.role);
+                default:
+                    throw new Error(`Unknown task type: ${task.type}`);
+            }
+        })
+    );
 
-  return results.map((result, index) => ({
-    type: tasks[index].type,
-    status: result.status,
-    data: result.status === 'fulfilled' ? result.value : null,
-    error: result.status === 'rejected' ? result.reason : null
-  }))
+    return results.map((result, index) => ({
+        type: tasks[index].type,
+        status: result.status,
+        data: result.status === 'fulfilled' ? result.value : null,
+        error: result.status === 'rejected' ? result.reason : null
+    }));
 }

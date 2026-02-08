@@ -1,302 +1,198 @@
-export async function parseLinkedInPDF(file: File): Promise<any> {
-  try {
-    const text = await extractTextFromPDF(file)
-    return extractLinkedInData(text)
-  } catch (error) {
-    console.error('Error parsing LinkedIn PDF:', error)
-    throw error
-  }
+import pdf from 'pdf-parse';
+
+interface LinkedInData {
+    experiences: Array<{
+        company: string;
+        company_logo_url?: string;
+        role: string;
+        employment_type?: string;
+        location?: string;
+        is_remote: boolean;
+        description: string;
+        start_date: string;
+        end_date: string | null;
+        is_current: boolean;
+    }>;
+    education: Array<{
+        institution: string;
+        degree: string;
+        field_of_study?: string;
+        start_date?: string;
+        end_date?: string;
+    }>;
+    certifications: Array<{
+        name: string;
+        issuing_organization: string;
+        issue_date?: string;
+        credential_url?: string;
+    }>;
+    skills: string[];
 }
 
-async function extractTextFromPDF(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      resolve(reader.result as string)
+export async function parseLinkedInPDF(buffer: Buffer): Promise<LinkedInData> {
+    try {
+        const data = await pdf(buffer);
+        const text = data.text;
+
+        return {
+            experiences: extractLinkedInExperiences(text),
+            education: extractLinkedInEducation(text),
+            certifications: extractLinkedInCertifications(text),
+            skills: extractLinkedInSkills(text)
+        };
+    } catch (error) {
+        console.error('Error parsing LinkedIn PDF:', error);
+        throw new Error('Failed to parse LinkedIn PDF');
     }
-    reader.onerror = reject
-    reader.readAsText(file)
-  })
 }
 
-function extractLinkedInData(text: string): any {
-  const lines = text.split('\n').filter(line => line.trim())
+function extractLinkedInExperiences(text: string) {
+    const experiences: any[] = [];
 
-  const personalInfo = extractPersonalInfo(text)
-  const experiences = extractLinkedInExperiences(text)
-  const education = extractLinkedInEducation(text)
-  const skills = extractLinkedInSkills(text)
-  const certifications = extractLinkedInCertifications(text)
+    // LinkedIn PDFs typically have a specific format
+    const experienceSection = text.split(/Experience/i)[1]?.split(/Education|Skills|Certifications/i)[0];
 
-  return {
-    personalInfo,
-    experiences,
-    education,
-    skills,
-    certifications
-  }
-}
+    if (!experienceSection) return experiences;
 
-function extractPersonalInfo(text: string): any {
-  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/
-  const phoneRegex = /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/
-  const locationRegex = /\b[A-Za-z\s]+,\s*[A-Za-z]{2}\b/
+    const lines = experienceSection.split('\n').filter(line => line.trim());
+    let currentExp: any = null;
 
-  const email = text.match(emailRegex)?.[0] || ''
-  const phone = text.match(phoneRegex)?.[0] || ''
-  const location = text.match(locationRegex)?.[0] || ''
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
 
-  const name = extractName(text)
+        // Role usually comes first in LinkedIn format
+        if (line && !line.match(/^\d+\s+(year|month|yr|mo)/i) && !line.startsWith('•')) {
+            if (currentExp && currentExp.role) {
+                experiences.push(currentExp);
+            }
 
-  return {
-    name,
-    email,
-    phone,
-    location
-  }
-}
+            currentExp = {
+                role: line,
+                company: lines[i + 1]?.trim() || '',
+                employment_type: '',
+                location: '',
+                is_remote: false,
+                description: '',
+                start_date: '',
+                end_date: null,
+                is_current: false
+            };
 
-function extractName(text: string): string {
-  const lines = text.split('\n').filter(line => line.trim())
+            // Extract employment type and dates
+            const dateLocationLine = lines[i + 2];
+            if (dateLocationLine) {
+                const dateMatch = dateLocationLine.match(/(\w+\s+\d{4})\s*[-–]\s*(\w+\s+\d{4}|Present)/i);
+                if (dateMatch) {
+                    currentExp.start_date = dateMatch[1];
+                    currentExp.end_date = dateMatch[2].match(/Present/i) ? null : dateMatch[2];
+                    currentExp.is_current = dateMatch[2].match(/Present/i) !== null;
+                }
 
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
-    const line = lines[i].trim()
-    if (line.length > 0 && !line.includes('@') && !line.includes('http') && line.split(' ').length >= 2) {
-      return line
-    }
-  }
+                if (dateLocationLine.match(/Remote/i)) {
+                    currentExp.is_remote = true;
+                }
 
-  return ''
-}
+                const locationMatch = dateLocationLine.match(/([A-Z][a-z]+(?:,\s*[A-Z]{2})?)/);
+                if (locationMatch) {
+                    currentExp.location = locationMatch[1];
+                }
+            }
 
-function extractLinkedInExperiences(text: string): any[] {
-  const experiences: any[] = []
-  const lines = text.split('\n')
-
-  let currentExperience: any = null
-  let inExperienceSection = false
-
-  const experienceKeywords = ['experience', 'work', 'employment', 'career']
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim().toLowerCase()
-
-    if (experienceKeywords.some(keyword => line.includes(keyword))) {
-      inExperienceSection = true
-      continue
-    }
-
-    if (inExperienceSection && ['education', 'skills', 'certifications', 'licenses'].some(keyword => line.includes(keyword))) {
-      inExperienceSection = false
-      if (currentExperience) {
-        experiences.push(currentExperience)
-        currentExperience = null
-      }
-      continue
-    }
-
-    if (inExperienceSection) {
-      const originalLine = lines[i].trim()
-      if (originalLine.length > 0) {
-        const dateRegex = /\b(19|20)\d{2}\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/gi
-        const hasDate = dateRegex.test(originalLine)
-
-        if (!currentExperience) {
-          currentExperience = {
-            company: '',
-            role: '',
-            employment_type: 'full-time',
-            location: '',
-            is_remote: false,
-            description: '',
-            start_date: '',
-            end_date: '',
-            is_current: false,
-            technologies: []
-          }
+            i += 2;
+        } else if (currentExp && line.startsWith('•')) {
+            currentExp.description += line.replace(/^•\s*/, '') + '\n';
         }
-
-        if (hasDate && !currentExperience.start_date) {
-          const dates = extractDates(originalLine)
-          currentExperience.start_date = dates.start
-          currentExperience.end_date = dates.end
-          currentExperience.is_current = dates.is_current
-        } else if (!currentExperience.company) {
-          currentExperience.company = originalLine
-        } else if (!currentExperience.role) {
-          currentExperience.role = originalLine
-        } else if (!currentExperience.description) {
-          currentExperience.description = originalLine
-        } else {
-          currentExperience.description += ' ' + originalLine
-        }
-      }
     }
-  }
 
-  if (currentExperience) {
-    experiences.push(currentExperience)
-  }
+    if (currentExp && currentExp.role) {
+        experiences.push(currentExp);
+    }
 
-  return experiences
+    return experiences;
 }
 
-function extractLinkedInEducation(text: string): any[] {
-  const education: any[] = []
-  const lines = text.split('\n')
+function extractLinkedInEducation(text: string) {
+    const education: any[] = [];
 
-  let currentEducation: any = null
-  let inEducationSection = false
+    const educationSection = text.split(/Education/i)[1]?.split(/Experience|Skills|Certifications/i)[0];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim().toLowerCase()
+    if (!educationSection) return education;
 
-    if (line.includes('education')) {
-      inEducationSection = true
-      continue
-    }
+    const lines = educationSection.split('\n').filter(line => line.trim());
+    let currentEdu: any = null;
 
-    if (inEducationSection && ['experience', 'skills', 'certifications'].some(keyword => line.includes(keyword))) {
-      inEducationSection = false
-      if (currentEducation) {
-        education.push(currentEducation)
-        currentEducation = null
-      }
-      continue
-    }
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
 
-    if (inEducationSection) {
-      const originalLine = lines[i].trim()
-      if (originalLine.length > 0) {
-        if (!currentEducation) {
-          currentEducation = {
-            institution: '',
-            degree: '',
-            field_of_study: '',
-            grade: '',
-            start_date: '',
-            end_date: '',
-            is_current: false,
-            description: ''
-          }
+        if (line && !line.match(/^\d{4}/)) {
+            if (currentEdu) {
+                education.push(currentEdu);
+            }
+
+            currentEdu = {
+                institution: line,
+                degree: lines[i + 1]?.trim() || '',
+                field_of_study: lines[i + 2]?.trim() || '',
+                start_date: '',
+                end_date: ''
+            };
+
+            const dateMatch = lines[i + 3]?.match(/(\d{4})\s*[-–]\s*(\d{4})/);
+            if (dateMatch) {
+                currentEdu.start_date = dateMatch[1];
+                currentEdu.end_date = dateMatch[2];
+                i += 3;
+            }
         }
-
-        if (!currentEducation.institution) {
-          currentEducation.institution = originalLine
-        } else if (!currentEducation.degree) {
-          currentEducation.degree = originalLine
-        } else if (!currentEducation.field_of_study) {
-          currentEducation.field_of_study = originalLine
-        } else {
-          const dates = extractDates(originalLine)
-          if (dates.start) {
-            currentEducation.start_date = dates.start
-            currentEducation.end_date = dates.end
-            currentEducation.is_current = dates.is_current
-          } else {
-            currentEducation.description = originalLine
-          }
-        }
-      }
     }
-  }
 
-  if (currentEducation) {
-    education.push(currentEducation)
-  }
+    if (currentEdu) {
+        education.push(currentEdu);
+    }
 
-  return education
+    return education;
 }
 
-function extractLinkedInSkills(text: string): string[] {
-  const skills: string[] = []
-  const lines = text.split('\n')
+function extractLinkedInCertifications(text: string) {
+    const certifications: any[] = [];
 
-  let inSkillsSection = false
+    const certsSection = text.split(/Licenses & Certifications|Certifications/i)[1]?.split(/Experience|Education|Skills/i)[0];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim().toLowerCase()
+    if (!certsSection) return certifications;
 
-    if (line.includes('skills')) {
-      inSkillsSection = true
-      continue
-    }
+    const lines = certsSection.split('\n').filter(line => line.trim());
 
-    if (inSkillsSection && ['experience', 'education', 'certifications'].some(keyword => line.includes(keyword))) {
-      inSkillsSection = false
-      continue
-    }
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
 
-    if (inSkillsSection) {
-      const originalLine = lines[i].trim()
-      if (originalLine.length > 0 && originalLine.length < 50) {
-        skills.push(originalLine)
-      }
-    }
-  }
-
-  return skills
-}
-
-function extractLinkedInCertifications(text: string): any[] {
-  const certifications: any[] = []
-  const lines = text.split('\n')
-
-  let inCertificationsSection = false
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim().toLowerCase()
-
-    if (line.includes('certifications') || line.includes('licenses')) {
-      inCertificationsSection = true
-      continue
-    }
-
-    if (inCertificationsSection && ['experience', 'education', 'skills'].some(keyword => line.includes(keyword))) {
-      inCertificationsSection = false
-      continue
-    }
-
-    if (inCertificationsSection) {
-      const originalLine = lines[i].trim()
-      if (originalLine.length > 0) {
-        const certification = {
-          name: originalLine,
-          issuing_organization: '',
-          issue_date: '',
-          expiration_date: '',
-          credential_id: '',
-          credential_url: ''
+        if (line && !line.match(/Issued|Credential/i)) {
+            certifications.push({
+                name: line,
+                issuing_organization: lines[i + 1]?.trim() || '',
+                issue_date: lines[i + 2]?.match(/Issued\s+(\w+\s+\d{4})/i)?.[1] || '',
+                credential_url: lines[i + 3]?.match(/(https?:\/\/[^\s]+)/)?.[1] || ''
+            });
+            i += 3;
         }
-        certifications.push(certification)
-      }
     }
-  }
 
-  return certifications
+    return certifications;
 }
 
-function extractDates(text: string): { start: string; end: string; is_current: boolean } {
-  const dateRegex = /\b(19|20)\d{2}\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/gi
-  const matches = text.match(dateRegex) || []
+function extractLinkedInSkills(text: string) {
+    const skills: string[] = [];
 
-  if (matches.length >= 2) {
-    return {
-      start: matches[0] || '',
-      end: matches[1]?.toLowerCase() === 'present' ? '' : (matches[1] || ''),
-      is_current: matches[1]?.toLowerCase() === 'present' || false
-    }
-  } else if (matches.length === 1) {
-    return {
-      start: matches[0] || '',
-      end: '',
-      is_current: text.toLowerCase().includes('present')
-    }
-  }
+    const skillsSection = text.split(/Skills/i)[1]?.split(/Experience|Education|Certifications/i)[0];
 
-  return {
-    start: '',
-    end: '',
-    is_current: false
-  }
+    if (!skillsSection) return skills;
+
+    const lines = skillsSection.split('\n').filter(line => line.trim());
+
+    for (const line of lines) {
+        if (line.trim() && !line.match(/Endorsements/i)) {
+            skills.push(line.trim());
+        }
+    }
+
+    return skills;
 }
