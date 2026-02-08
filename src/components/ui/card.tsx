@@ -1,15 +1,22 @@
+'use client';
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
+
+// Create motion components
+const MotionDiv = motion.div
 
 const Card = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }
 >(({ className, interactive, ...props }, ref) => (
-    <div
+    <MotionDiv
         ref={ref}
+        whileHover={interactive ? { y: -5, transition: { duration: 0.2 } } : undefined}
         className={cn(
             "rounded-lg border border-slate-200 bg-white shadow-md",
-            interactive && "card-interactive",
+            interactive && "card-interactive cursor-pointer",
             className
         )}
         {...props}

@@ -1,11 +1,31 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Sparkles, Github, FileText, Palette, BarChart3, Zap, Shield, ArrowRight, Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 export default function HomePage() {
+    const fadeInUp = {
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { duration: 0.5 }
+    };
+
+    const staggerContainer = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.2
+            }
+        }
+    };
+
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
@@ -43,18 +63,26 @@ export default function HomePage() {
             {/* Hero Section */}
             <section className="relative overflow-hidden bg-gradient-hero bg-dot-pattern py-20 md:py-32">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <Badge variant="primary" icon={<Sparkles className="h-3 w-3" />} className="mb-6 animate-fade-in">
-                            AI-Powered Portfolio Generation
-                        </Badge>
-                        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-balance animate-slide-up">
+                    <motion.div
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="max-w-4xl mx-auto text-center"
+                    >
+                        <motion.div variants={fadeInUp}>
+                            <Badge variant="primary" icon={<Sparkles className="h-3 w-3" />} className="mb-6">
+                                AI-Powered Portfolio Generation
+                            </Badge>
+                        </motion.div>
+                        <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl font-bold mb-6 text-balance">
                             Build Your Dream Portfolio in{' '}
                             <span className="bg-gradient-primary bg-clip-text text-transparent">Minutes with AI</span>
-                        </h1>
-                        <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto text-balance animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        </motion.h1>
+                        <motion.p variants={fadeInUp} className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto text-balance">
                             Connect your GitHub, upload your resume, and let AI create a professional portfolio website in minutes. No coding required.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                        </motion.p>
+                        <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                             <Link href="/dashboard">
                                 <Button variant="primary" size="lg" rightIcon={<ArrowRight className="h-5 w-5" />}>
                                     Generate Your Portfolio
@@ -65,16 +93,16 @@ export default function HomePage() {
                                     View Templates
                                 </Button>
                             </Link>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 text-sm text-slate-600 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                        </motion.div>
+                        <motion.div variants={fadeInUp} className="flex items-center justify-center gap-2 text-sm text-slate-600">
                             <div className="flex -space-x-2">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="w-8 h-8 rounded-full bg-gradient-primary border-2 border-white" />
                                 ))}
                             </div>
                             <span className="font-medium">Join 10,000+ developers</span>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </div>
                 {/* Scroll Indicator */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-subtle">
@@ -87,43 +115,69 @@ export default function HomePage() {
             {/* How It Works */}
             <section id="features" className="py-20 bg-white">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-4">How It Works</h2>
-                    <p className="text-center text-slate-600 mb-12 max-w-2xl mx-auto">
-                        Three simple steps to create your professional portfolio
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto relative">
+                    <motion.div
+                        initial="initial"
+                        whileInView="whileInView"
+                        viewport={{ once: true }}
+                        variants={fadeInUp}
+                    >
+                        <h2 className="text-4xl font-bold text-center mb-4">How It Works</h2>
+                        <p className="text-center text-slate-600 mb-12 max-w-2xl mx-auto">
+                            Three simple steps to create your professional portfolio
+                        </p>
+                    </motion.div>
+                    <motion.div
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto relative"
+                    >
                         {/* Connection Lines (Desktop Only) */}
                         <div className="hidden md:block absolute top-20 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-indigo-200 via-purple-200 to-indigo-200" style={{ width: 'calc(66.666% - 4rem)', left: 'calc(16.666% + 2rem)' }} />
 
-                        <FeatureCard
-                            number="1"
-                            icon={<Github className="w-8 h-8" />}
-                            title="Connect Your Data"
-                            description="Link your GitHub, upload your resume, and connect LinkedIn to import your professional history."
-                            gradient="from-indigo-500 to-indigo-600"
-                        />
-                        <FeatureCard
-                            number="2"
-                            icon={<Sparkles className="w-8 h-8" />}
-                            title="AI Generation"
-                            description="Our AI analyzes your work and creates compelling project narratives, skills analysis, and optimized content."
-                            gradient="from-purple-500 to-purple-600"
-                        />
-                        <FeatureCard
-                            number="3"
-                            icon={<Palette className="w-8 h-8" />}
-                            title="Customize & Publish"
-                            description="Choose from beautiful templates, customize colors, and publish your portfolio with a custom domain."
-                            gradient="from-indigo-500 to-purple-600"
-                        />
-                    </div>
+                        <motion.div variants={fadeInUp}>
+                            <FeatureCard
+                                number="1"
+                                icon={<Github className="w-8 h-8" />}
+                                title="Connect Your Data"
+                                description="Link your GitHub, upload your resume, and connect LinkedIn to import your professional history."
+                                gradient="from-indigo-500 to-indigo-600"
+                            />
+                        </motion.div>
+                        <motion.div variants={fadeInUp}>
+                            <FeatureCard
+                                number="2"
+                                icon={<Sparkles className="w-8 h-8" />}
+                                title="AI Generation"
+                                description="Our AI analyzes your work and creates compelling project narratives, skills analysis, and optimized content."
+                                gradient="from-purple-500 to-purple-600"
+                            />
+                        </motion.div>
+                        <motion.div variants={fadeInUp}>
+                            <FeatureCard
+                                number="3"
+                                icon={<Palette className="w-8 h-8" />}
+                                title="Customize & Publish"
+                                description="Choose from beautiful templates, customize colors, and publish your portfolio with a custom domain."
+                                gradient="from-indigo-500 to-purple-600"
+                            />
+                        </motion.div>
+                    </motion.div>
                 </div>
             </section>
 
             {/* Features/Benefits */}
             <section className="py-20 bg-slate-50">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-16">Everything You Need to Stand Out</h2>
+                    <motion.div
+                        initial="initial"
+                        whileInView="whileInView"
+                        viewport={{ once: true }}
+                        variants={fadeInUp}
+                    >
+                        <h2 className="text-4xl font-bold text-center mb-16">Everything You Need to Stand Out</h2>
+                    </motion.div>
                     <div className="max-w-6xl mx-auto space-y-24">
                         <FeatureRow
                             title="AI-Powered Content Generation"
@@ -165,91 +219,149 @@ export default function HomePage() {
             {/* Social Proof */}
             <section className="py-20 bg-slate-900 text-white">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-12">Why Developers Choose Folio.ai</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-                        <StatCard
-                            icon={<Zap className="w-6 h-6" />}
-                            stat="< 2 min"
-                            label="Average generation time"
-                        />
-                        <StatCard
-                            icon={<Sparkles className="w-6 h-6" />}
-                            stat="95%"
-                            label="AI accuracy rate"
-                        />
-                        <StatCard
-                            icon={<BarChart3 className="w-6 h-6" />}
-                            stat="85+"
-                            label="Average ATS score"
-                        />
-                        <StatCard
-                            icon={<Shield className="w-6 h-6" />}
-                            stat="24/7"
-                            label="Auto-sync updates"
-                        />
-                    </div>
+                    <motion.div
+                        initial="initial"
+                        whileInView="whileInView"
+                        viewport={{ once: true }}
+                        variants={fadeInUp}
+                    >
+                        <h2 className="text-4xl font-bold text-center mb-12">Why Developers Choose Folio.ai</h2>
+                    </motion.div>
+                    <motion.div
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto"
+                    >
+                        <motion.div variants={fadeInUp}>
+                            <StatCard
+                                icon={<Zap className="w-6 h-6" />}
+                                stat="< 2 min"
+                                label="Average generation time"
+                            />
+                        </motion.div>
+                        <motion.div variants={fadeInUp}>
+                            <StatCard
+                                icon={<Sparkles className="w-6 h-6" />}
+                                stat="95%"
+                                label="AI accuracy rate"
+                            />
+                        </motion.div>
+                        <motion.div variants={fadeInUp}>
+                            <StatCard
+                                icon={<BarChart3 className="w-6 h-6" />}
+                                stat="85+"
+                                label="Average ATS score"
+                            />
+                        </motion.div>
+                        <motion.div variants={fadeInUp}>
+                            <StatCard
+                                icon={<Shield className="w-6 h-6" />}
+                                stat="24/7"
+                                label="Auto-sync updates"
+                            />
+                        </motion.div>
+                    </motion.div>
                 </div>
             </section>
 
             {/* Templates Preview */}
             <section id="templates" className="py-20 bg-gradient-hero">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-4">Choose Your Style</h2>
-                    <p className="text-center text-slate-600 mb-12">
-                        Beautiful, responsive templates designed for developers
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <motion.div
+                        initial="initial"
+                        whileInView="whileInView"
+                        viewport={{ once: true }}
+                        variants={fadeInUp}
+                    >
+                        <h2 className="text-4xl font-bold text-center mb-4">Choose Your Style</h2>
+                        <p className="text-center text-slate-600 mb-12">
+                            Beautiful, responsive templates designed for developers
+                        </p>
+                    </motion.div>
+                    <motion.div
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true }}
+                        variants={staggerContainer}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+                    >
                         {['Modern', 'Minimal', 'Creative'].map((template) => (
-                            <Card key={template} interactive className="overflow-hidden group">
-                                <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 relative">
-                                    <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-semibold">
-                                        {template} Template Preview
+                            <motion.div variants={fadeInUp} key={template}>
+                                <Card interactive className="overflow-hidden group h-full">
+                                    <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 relative">
+                                        <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-semibold">
+                                            {template} Template Preview
+                                        </div>
                                     </div>
-                                </div>
-                                <CardContent className="p-6">
-                                    <h3 className="font-bold text-xl mb-2">{template}</h3>
-                                    <Badge variant="primary" className="mb-3">Free</Badge>
-                                    <p className="text-slate-600 text-sm mb-4">
-                                        Perfect for showcasing your projects with a {template.toLowerCase()} aesthetic
-                                    </p>
-                                    <Button variant="ghost" size="sm" className="w-full group-hover:bg-indigo-50">
-                                        Use This Template
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                                    <CardContent className="p-6">
+                                        <h3 className="font-bold text-xl mb-2">{template}</h3>
+                                        <Badge variant="primary" className="mb-3">Free</Badge>
+                                        <p className="text-slate-600 text-sm mb-4">
+                                            Perfect for showcasing your projects with a {template.toLowerCase()} aesthetic
+                                        </p>
+                                        <Button variant="ghost" size="sm" className="w-full group-hover:bg-indigo-50">
+                                            Use This Template
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         ))}
-                    </div>
-                    <div className="text-center mt-8">
+                    </motion.div>
+                    <motion.div
+                        initial="initial"
+                        whileInView="whileInView"
+                        viewport={{ once: true }}
+                        variants={fadeInUp}
+                        className="text-center mt-8"
+                    >
                         <Link href="/templates">
                             <Button variant="secondary" size="lg">
                                 View All Templates
                             </Button>
                         </Link>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
             {/* Testimonials */}
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-12">What Developers Are Saying</h2>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="text-4xl font-bold text-center mb-12"
+                    >
+                        What Developers Are Saying
+                    </motion.h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {testimonials.map((testimonial, i) => (
-                            <Card key={i} className="p-6">
-                                <div className="flex gap-1 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                                    ))}
-                                </div>
-                                <p className="text-slate-700 mb-4 italic">"{testimonial.quote}"</p>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-primary" />
-                                    <div>
-                                        <p className="font-semibold text-sm">{testimonial.name}</p>
-                                        <p className="text-xs text-slate-600">{testimonial.role}</p>
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: i * 0.1 }}
+                            >
+                                <Card className="p-6 h-full">
+                                    <div className="flex gap-1 mb-4">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                                        ))}
                                     </div>
-                                </div>
-                            </Card>
+                                    <p className="text-slate-700 mb-4 italic">"{testimonial.quote}"</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-primary" />
+                                        <div>
+                                            <p className="font-semibold text-sm">{testimonial.name}</p>
+                                            <p className="text-xs text-slate-600">{testimonial.role}</p>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
@@ -258,7 +370,13 @@ export default function HomePage() {
             {/* Final CTA */}
             <section className="py-20 bg-gradient-hero">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-3xl mx-auto bg-white rounded-3xl p-12 shadow-2xl border border-slate-200">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-3xl mx-auto bg-white rounded-3xl p-12 shadow-2xl border border-slate-200"
+                    >
                         <h2 className="text-4xl font-bold text-center mb-4">Ready to Stand Out?</h2>
                         <p className="text-xl text-center text-slate-600 mb-8">
                             Join 10,000+ developers who've created stunning portfolios with AI
@@ -280,7 +398,7 @@ export default function HomePage() {
                                 <span>SSL Secure</span>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
@@ -347,7 +465,13 @@ function FeatureCard({ number, icon, title, description, gradient }: any) {
 
 function FeatureRow({ title, description, benefits, imageAlt, reverse }: any) {
     return (
-        <div className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} gap-12 items-center`}>
+        <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className={`flex flex-col ${reverse ? 'md:flex-row-reverse' : 'md:flex-row'} gap-12 items-center`}
+        >
             <div className="flex-1">
                 <h3 className="text-3xl font-bold mb-4">{title}</h3>
                 <p className="text-lg text-slate-600 mb-6">{description}</p>
@@ -365,7 +489,7 @@ function FeatureRow({ title, description, benefits, imageAlt, reverse }: any) {
                     <span className="text-slate-400 font-semibold">{imageAlt}</span>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
 
