@@ -17,6 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
     title: 'Folio.ai - AI-Powered Portfolio Generator',
     description: 'Turn your digital footprint into a stunning professional portfolio with AI. Connect GitHub, upload your resume, and get hired.',
+    icons: {
+        icon: '/logo.png',
+        shortcut: '/logo.png',
+        apple: '/logo.png',
+    },
 };
 
 export default function RootLayout({

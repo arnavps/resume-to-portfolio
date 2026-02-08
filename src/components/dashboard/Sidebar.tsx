@@ -56,8 +56,8 @@ export default function Sidebar() {
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-8 h-8 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg group-hover:shadow-indigo-500/25 transition-all duration-300">
-            <span className="text-white font-bold text-lg">F</span>
+          <div className="relative w-8 h-8 flex items-center justify-center">
+            <img src="/logo.png" alt="Folio.ai Logo" className="w-full h-full object-contain" />
           </div>
           <span className="font-bold text-lg text-white tracking-tight group-hover:text-indigo-200 transition-colors">Folio.ai</span>
         </Link>

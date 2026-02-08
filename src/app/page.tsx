@@ -33,7 +33,8 @@ export default function HomePage() {
                 <div className="container mx-auto px-4 py-4">
                     <nav className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <Image src="/logo.svg" alt="Folio.ai" width={140} height={40} className="h-10 w-auto" />
+                            <Image src="/logo.png" alt="Folio.ai" width={40} height={40} className="h-10 w-auto" />
+                            <span className="font-bold text-xl tracking-tight text-slate-900">Folio.ai</span>
                         </div>
                         <div className="hidden md:flex items-center gap-6">
                             <Link href="#features" className="text-slate-600 hover:text-indigo-600 transition font-medium">
