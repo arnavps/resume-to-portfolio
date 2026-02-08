@@ -2,14 +2,14 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
+import { motion, HTMLMotionProps } from "framer-motion"
 
 // Create motion components
 const MotionDiv = motion.div
 
 const Card = React.forwardRef<
     HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }
+    HTMLMotionProps<"div"> & { interactive?: boolean }
 >(({ className, interactive, ...props }, ref) => (
     <MotionDiv
         ref={ref}
