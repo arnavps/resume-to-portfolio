@@ -39,9 +39,9 @@ export default function Header() {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-slate-200 p-0 shadow-sm hover:bg-slate-50">
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-primary rounded-full text-white font-medium text-xs">
+                            <span className="flex h-full w-full items-center justify-center bg-gradient-primary rounded-full text-white font-medium text-xs">
                                 AS
-                            </div>
+                            </span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
