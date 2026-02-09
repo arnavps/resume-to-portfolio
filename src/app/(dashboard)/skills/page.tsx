@@ -6,11 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label';
 
 type SkillCategory = 'Frontend' | 'Backend' | 'Tools' | 'Soft Skills';
 
 export default function SkillsPage() {
     const [activeTab, setActiveTab] = useState<SkillCategory>('Frontend');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Mock data
     const [skills, setSkills] = useState([
@@ -28,6 +39,35 @@ export default function SkillsPage() {
 
     const filteredSkills = skills.filter(s => s.category === activeTab);
 
+    const [newSkill, setNewSkill] = useState({
+        name: '',
+        category: 'Frontend' as SkillCategory,
+        level: 'Intermediate',
+        icon: '🔹'
+    });
+
+    const handleAddSkill = () => {
+        const skill = {
+            id: skills.length + 1,
+            name: newSkill.name,
+            category: newSkill.category,
+            level: newSkill.level,
+            icon: newSkill.icon
+        };
+        setSkills([...skills, skill]);
+        setNewSkill({ name: '', category: activeTab, level: 'Intermediate', icon: '🔹' });
+        setIsDialogOpen(false);
+    };
+
+    const handleAISuggest = () => {
+        const suggestedSkills = [
+            { id: Date.now(), name: 'Redux', category: 'Frontend', level: 'Intermediate', icon: '🔄' },
+            { id: Date.now() + 1, name: 'Stripe API', category: 'Backend', level: 'Advanced', icon: '💳' },
+        ];
+        // @ts-ignore
+        setSkills([...skills, ...suggestedSkills]);
+    };
+
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in-up">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -38,12 +78,71 @@ export default function SkillsPage() {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" leftIcon={<Sparkles className="h-4 w-4" />}>
+                    <Button variant="outline" leftIcon={<Sparkles className="h-4 w-4" />} onClick={handleAISuggest}>
                         AI Suggest
                     </Button>
-                    <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
-                        Add Skill
-                    </Button>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
+                                Add Skill
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Add New Skill</DialogTitle>
+                                <DialogDescription>
+                                    Add a skill to your portfolio.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name">Skill Name</Label>
+                                    <Input
+                                        id="name"
+                                        placeholder="e.g. React"
+                                        value={newSkill.name}
+                                        onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="category">Category</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map((cat) => (
+                                            <Badge
+                                                key={cat}
+                                                variant={newSkill.category === cat ? 'primary' : 'outline'}
+                                                className="cursor-pointer"
+                                                onClick={() => setNewSkill({ ...newSkill, category: cat, icon: cat === 'Frontend' ? '⚛️' : cat === 'Backend' ? '🟢' : '🔹' })}
+                                            >
+                                                {cat}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="level">Proficiency</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) => (
+                                            <Badge
+                                                key={level}
+                                                variant={newSkill.level === level ? 'secondary' : 'outline'}
+                                                className="cursor-pointer"
+                                                onClick={() => setNewSkill({ ...newSkill, level })}
+                                            >
+                                                {level}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                                <Button type="submit" variant="primary" onClick={handleAddSkill} disabled={!newSkill.name}>
+                                    Save Skill
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 
@@ -55,8 +154,8 @@ export default function SkillsPage() {
                             key={category}
                             onClick={() => setActiveTab(category)}
                             className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === category
-                                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 shadow-sm'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
+                                ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 shadow-sm'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
                                 }`}
                         >
                             {category}
@@ -106,7 +205,10 @@ export default function SkillsPage() {
                                     </div>
                                 ))}
 
-                                <button className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-300 hover:bg-slate-50 transition-all text-slate-500 hover:text-indigo-600 h-[74px]">
+                                <button
+                                    onClick={() => setIsDialogOpen(true)}
+                                    className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-300 hover:bg-slate-50 transition-all text-slate-500 hover:text-indigo-600 h-[74px]"
+                                >
                                     <Plus className="h-4 w-4" />
                                     <span className="font-medium">Add New Skill</span>
                                 </button>
@@ -129,6 +231,10 @@ export default function SkillsPage() {
                                     {['Redux', 'Stripe API', 'SEO', 'Performance Optimization'].map(skill => (
                                         <button
                                             key={skill}
+                                            onClick={() => {
+                                                // @ts-ignore
+                                                setSkills([...skills, { id: Date.now(), name: skill, category: 'Frontend', level: 'Intermediate', icon: '🔹' }])
+                                            }}
                                             className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full text-sm font-medium text-indigo-700 shadow-sm hover:shadow-md hover:bg-indigo-50 transition-all border border-indigo-100"
                                         >
                                             <Plus className="h-3 w-3" />

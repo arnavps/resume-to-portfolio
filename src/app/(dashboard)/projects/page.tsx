@@ -1,19 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Folder, MoreVertical, Github, Globe, Calendar } from 'lucide-react';
+import { Plus, Search, Folder, MoreVertical, Github, Globe, Calendar, X } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ProjectsPage() {
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const [search, setSearch] = useState('');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Mock data for now
-    const projects = [
+    const [projects, setProjects] = useState([
         {
             id: 1,
             title: 'E-commerce Platform',
@@ -41,7 +53,29 @@ export default function ProjectsPage() {
             status: 'Published',
             image: '/projects/api.png'
         }
-    ];
+    ]);
+
+    const [newProject, setNewProject] = useState({
+        title: '',
+        description: '',
+        tags: '',
+        status: 'Draft'
+    });
+
+    const handleAddProject = () => {
+        const project = {
+            id: projects.length + 1,
+            title: newProject.title,
+            description: newProject.description,
+            tags: newProject.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
+            updatedAt: 'Just now',
+            status: newProject.status,
+            image: ''
+        };
+        setProjects([project, ...projects]);
+        setNewProject({ title: '', description: '', tags: '', status: 'Draft' });
+        setIsDialogOpen(false);
+    };
 
     const filteredProjects = projects.filter(p =>
         p.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,9 +91,71 @@ export default function ProjectsPage() {
                         Manage your portfolio projects and case studies.
                     </p>
                 </div>
-                <Button size="lg" variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
-                    Add Project
-                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="lg" variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
+                            Add Project
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[550px]">
+                        <DialogHeader>
+                            <DialogTitle>Add New Project</DialogTitle>
+                            <DialogDescription>
+                                Add details about your project to showcase in your portfolio.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="title">Project Title</Label>
+                                <Input
+                                    id="title"
+                                    placeholder="e.g. E-commerce Dashboard"
+                                    value={newProject.title}
+                                    onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    placeholder="Describe your project, technologies used, and your role..."
+                                    value={newProject.description}
+                                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="tags">Tags (comma separated)</Label>
+                                <Input
+                                    id="tags"
+                                    placeholder="React, Node.js, TypeScript"
+                                    value={newProject.tags}
+                                    onChange={(e) => setNewProject({ ...newProject, tags: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="status">Status</Label>
+                                <div className="flex gap-2">
+                                    {['Draft', 'Published'].map((status) => (
+                                        <Badge
+                                            key={status}
+                                            variant={newProject.status === status ? (status === 'Published' ? 'success' : 'secondary') : 'outline'}
+                                            className="cursor-pointer"
+                                            onClick={() => setNewProject({ ...newProject, status })}
+                                        >
+                                            {status}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                            <Button type="submit" variant="primary" onClick={handleAddProject} disabled={!newProject.title}>
+                                Save Project
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="flex items-center gap-4">
@@ -126,10 +222,10 @@ export default function ProjectsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter className="p-5 pt-0 mt-4 flex gap-2">
-                                <Button variant="outline" size="sm" className="flex-1" icon={<Github className="h-3 w-3" />}>
+                                <Button variant="outline" size="sm" className="flex-1" leftIcon={<Github className="h-3 w-3" />}>
                                     Code
                                 </Button>
-                                <Button variant="outline" size="sm" className="flex-1" icon={<Globe className="h-3 w-3" />}>
+                                <Button variant="outline" size="sm" className="flex-1" leftIcon={<Globe className="h-3 w-3" />}>
                                     Demo
                                 </Button>
                             </CardFooter>

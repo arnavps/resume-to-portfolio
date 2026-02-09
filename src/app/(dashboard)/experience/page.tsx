@@ -6,10 +6,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ExperiencePage() {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     // Mock data
-    const experience = [
+    const [experience, setExperience] = useState([
         {
             id: 1,
             role: 'Senior Frontend Developer',
@@ -37,7 +51,31 @@ export default function ExperiencePage() {
             description: 'Developed responsive websites for various clients using WordPress and React.',
             skills: ['HTML/CSS', 'JavaScript', 'WordPress']
         }
-    ];
+    ]);
+
+    const [newExperience, setNewExperience] = useState({
+        role: '',
+        company: '',
+        period: '',
+        type: 'Full-time',
+        description: '',
+        skills: ''
+    });
+
+    const handleAddExperience = () => {
+        const item = {
+            id: experience.length + 1,
+            role: newExperience.role,
+            company: newExperience.company,
+            period: newExperience.period,
+            type: newExperience.type,
+            description: newExperience.description,
+            skills: newExperience.skills.split(',').map(s => s.trim()).filter(s => s !== '')
+        };
+        setExperience([item, ...experience]);
+        setNewExperience({ role: '', company: '', period: '', type: 'Full-time', description: '', skills: '' });
+        setIsDialogOpen(false);
+    };
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
@@ -48,9 +86,87 @@ export default function ExperiencePage() {
                         Showcase your professional journey and career milestones.
                     </p>
                 </div>
-                <Button size="lg" variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
-                    Add Experience
-                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="lg" variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
+                            Add Experience
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[550px]">
+                        <DialogHeader>
+                            <DialogTitle>Add Experience</DialogTitle>
+                            <DialogDescription>
+                                Add your work experience, internships, or freelance projects.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="role">Role / Job Title</Label>
+                                    <Input
+                                        id="role"
+                                        placeholder="e.g. Senior Developer"
+                                        value={newExperience.role}
+                                        onChange={(e) => setNewExperience({ ...newExperience, role: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="company">Company</Label>
+                                    <Input
+                                        id="company"
+                                        placeholder="e.g. Google"
+                                        value={newExperience.company}
+                                        onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="period">Period</Label>
+                                    <Input
+                                        id="period"
+                                        placeholder="e.g. 2022 - Present"
+                                        value={newExperience.period}
+                                        onChange={(e) => setNewExperience({ ...newExperience, period: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="type">Type</Label>
+                                    <Input
+                                        id="type"
+                                        placeholder="e.g. Full-time"
+                                        value={newExperience.type}
+                                        onChange={(e) => setNewExperience({ ...newExperience, type: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    placeholder="Describe your responsibilities and achievements..."
+                                    value={newExperience.description}
+                                    onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="skills">Skills Used (comma separated)</Label>
+                                <Input
+                                    id="skills"
+                                    placeholder="React, Leadership, Agile"
+                                    value={newExperience.skills}
+                                    onChange={(e) => setNewExperience({ ...newExperience, skills: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                            <Button type="submit" variant="primary" onClick={handleAddExperience} disabled={!newExperience.role || !newExperience.company}>
+                                Save Experience
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="space-y-6 relative">
