@@ -1,12 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutTemplate, Palette, Type, Layout, Eye, Save, Smartphone, Monitor, Tablet, Check } from 'lucide-react';
+import { LayoutTemplate, Palette, Type, Layout, Eye, Save, Smartphone, Monitor, Tablet, Check, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+import { portfolioData } from '@/lib/data/mockData';
+import { ModernTemplate } from '@/components/templates/ModernTemplate';
+import { MinimalTemplate } from '@/components/templates/MinimalTemplate';
+import { CreativeTemplate } from '@/components/templates/CreativeTemplate';
 
 export default function CustomizePage() {
     const [template, setTemplate] = useState('modern');
@@ -15,9 +19,58 @@ export default function CustomizePage() {
     const [deviceView, setDeviceView] = useState('desktop');
 
     const templates = [
-        { id: 'modern', name: 'Modern', image: '/templates/modern.png' },
-        { id: 'minimal', name: 'Minimal', image: '/templates/minimal.png' },
-        { id: 'creative', name: 'Creative', image: '/templates/creative.png' }
+        {
+            id: 'modern',
+            name: 'Modern',
+            // CSS-based mini preview for Modern (Card/Banner style)
+            preview: (
+                <div className="w-full h-full bg-slate-50 relative p-2 flex flex-col gap-1 overflow-hidden">
+                    <div className="h-4 bg-white rounded-sm shadow-sm"></div>
+                    <div className="flex gap-1">
+                        <div className="flex-1 h-8 bg-white rounded-sm shadow-sm"></div>
+                        <div className="w-4 h-8 bg-indigo-500 rounded-full opacity-20"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 mt-1">
+                        <div className="h-6 bg-white rounded-sm shadow-sm"></div>
+                        <div className="h-6 bg-white rounded-sm shadow-sm"></div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'minimal',
+            name: 'Minimal',
+            // CSS-based mini preview for Minimal (Clean/Typographic)
+            preview: (
+                <div className="w-full h-full bg-white relative p-3 flex flex-col gap-2 overflow-hidden border border-slate-100">
+                    <div className="h-2 w-1/2 bg-slate-900 rounded-full"></div>
+                    <div className="h-1 w-3/4 bg-slate-200 rounded-full"></div>
+                    <div className="h-px w-full bg-slate-100 my-1"></div>
+                    <div className="flex flex-col gap-1">
+                        <div className="h-1 w-full bg-slate-100 rounded-full"></div>
+                        <div className="h-1 w-full bg-slate-100 rounded-full"></div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'creative',
+            name: 'Creative',
+            // CSS-based mini preview for Creative (Dark/Sidebar)
+            preview: (
+                <div className="w-full h-full bg-slate-950 relative flex overflow-hidden">
+                    <div className="w-1/3 h-full bg-slate-900 p-1 flex flex-col gap-1 border-r border-slate-800">
+                        <div className="w-6 h-1 bg-indigo-500 rounded-full mb-1"></div>
+                        <div className="w-full h-2 bg-slate-800 rounded-sm"></div>
+                        <div className="w-3/4 h-2 bg-slate-800 rounded-sm"></div>
+                    </div>
+                    <div className="w-2/3 h-full p-2 flex flex-col gap-1">
+                        <div className="w-full h-8 bg-slate-900 rounded-md border border-slate-800"></div>
+                        <div className="w-full h-8 bg-slate-900 rounded-md border border-slate-800"></div>
+                    </div>
+                </div>
+            )
+        }
     ];
 
     const colors = [
@@ -33,6 +86,15 @@ export default function CustomizePage() {
         { id: 'serif', name: 'Merriweather + Sans', class: 'font-serif' },
         { id: 'mono', name: 'Mono + Sans', class: 'font-mono' },
     ];
+
+    const renderTemplate = () => {
+        const props = { data: portfolioData, theme: colorTheme, font: fontPair };
+        switch (template) {
+            case 'minimal': return <MinimalTemplate {...props} />;
+            case 'creative': return <CreativeTemplate {...props} />;
+            default: return <ModernTemplate {...props} />;
+        }
+    }
 
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6 animate-fade-in">
@@ -66,19 +128,19 @@ export default function CustomizePage() {
                                             : 'border-slate-200 hover:border-indigo-200'
                                             }`}
                                     >
-                                        <div className="aspect-video bg-slate-100 relative">
-                                            {/* Placeholder for template preview */}
-                                            <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                                Image Placeholder
-                                            </div>
+                                        <div className="aspect-video bg-slate-100 relative group">
+                                            {/* Template Preview Helper */}
+                                            {t.preview}
+
                                             {template === t.id && (
-                                                <div className="absolute top-2 right-2 bg-indigo-500 text-white p-1 rounded-full shadow-sm">
+                                                <div className="absolute top-2 right-2 bg-indigo-500 text-white p-1 rounded-full shadow-sm z-10">
                                                     <Check className="h-4 w-4" />
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-3 bg-white">
+                                        <div className="p-3 bg-white flex justify-between items-center">
                                             <span className="font-medium text-slate-900">{t.name}</span>
+                                            {template === t.id && <Badge variant="secondary" className="text-[10px] h-5">Active</Badge>}
                                         </div>
                                     </div>
                                 ))}
@@ -156,23 +218,31 @@ export default function CustomizePage() {
                         <button
                             onClick={() => setDeviceView('desktop')}
                             className={`p-1.5 rounded-md transition-all ${deviceView === 'desktop' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
+                            title="Desktop"
                         >
                             <Monitor className="h-4 w-4" />
                         </button>
                         <button
                             onClick={() => setDeviceView('tablet')}
                             className={`p-1.5 rounded-md transition-all ${deviceView === 'tablet' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
+                            title="Tablet"
                         >
                             <Tablet className="h-4 w-4" />
                         </button>
                         <button
                             onClick={() => setDeviceView('mobile')}
                             className={`p-1.5 rounded-md transition-all ${deviceView === 'mobile' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
+                            title="Mobile"
                         >
                             <Smartphone className="h-4 w-4" />
                         </button>
                     </div>
-                    <Button variant="ghost" size="sm" rightIcon={<Eye className="h-4 w-4" />}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        rightIcon={<Eye className="h-4 w-4" />}
+                        onClick={() => window.open('/portfolio/demo-user', '_blank')}
+                    >
                         Full Screen
                     </Button>
                 </div>
@@ -185,37 +255,9 @@ export default function CustomizePage() {
                                 'w-[375px] h-[812px] rounded-3xl border-8 border-slate-800'
                             }`}
                     >
-                        {/* Mock Content for Preview */}
+                        {/* Render Selected Template */}
                         <div className="w-full h-full overflow-y-auto custom-scrollbar">
-                            <div className={`
-                               h-64 flex items-center justify-center text-white
-                               ${colorTheme === 'indigo' ? 'bg-indigo-600' :
-                                    colorTheme === 'emerald' ? 'bg-emerald-600' :
-                                        colorTheme === 'rose' ? 'bg-rose-600' :
-                                            colorTheme === 'amber' ? 'bg-amber-600' :
-                                                'bg-slate-800'}
-                           `}>
-                                <div className="text-center">
-                                    <div className="inline-block p-1 bg-white/20 rounded-full mb-4 px-3 text-sm font-medium backdrop-blur-sm">
-                                        Hire Me
-                                    </div>
-                                    <h1 className={`text-4xl font-bold mb-4 ${fontPair === 'serif' ? 'font-serif' :
-                                        fontPair === 'mono' ? 'font-mono' : 'font-sans'
-                                        }`}>
-                                        Alex Developer
-                                    </h1>
-                                    <p className="text-white/80 max-w-md mx-auto">
-                                        Building digital products, brands, and experiences.
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="p-8 space-y-8">
-                                <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-6" />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="h-32 bg-slate-100 rounded-lg animate-pulse" />
-                                    <div className="h-32 bg-slate-100 rounded-lg animate-pulse" />
-                                </div>
-                            </div>
+                            {renderTemplate()}
                         </div>
                     </div>
                 </div>
