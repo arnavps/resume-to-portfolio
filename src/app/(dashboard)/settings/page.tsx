@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Globe, Shield, CreditCard, Save, Upload, Github, Linkedin, Twitter, Mail } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
 export default function SettingsPage() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
+                <div className="h-8 w-48 bg-slate-200 rounded"></div>
+                <div className="h-4 w-96 bg-slate-200 rounded"></div>
+                <div className="h-10 w-full bg-slate-200 rounded mt-6"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
             <div>

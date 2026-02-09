@@ -1,6 +1,7 @@
 'use client';
 
 import { Bell, Search, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -14,6 +15,12 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 
 export default function Header() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     return (
         <header className="sticky top-0 z-30 flex h-16 w-full items-center gap-4 border-b border-border bg-white/80 px-6 backdrop-blur-md dark:bg-slate-950/80">
             <div className="flex flex-1 items-center gap-4">
@@ -36,29 +43,33 @@ export default function Header() {
 
                 <div className="h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-slate-200 p-0 shadow-sm hover:bg-slate-50">
-                            <span className="flex h-full w-full items-center justify-center bg-gradient-primary rounded-full text-white font-medium text-xs">
-                                AS
-                            </span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel className="font-normal">
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">Arnav Shirwadkar</p>
-                                <p className="text-xs leading-none text-muted-foreground">arnav@example.com</p>
-                            </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Billing</DropdownMenuItem>
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600">Log out</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {mounted ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-slate-200 p-0 shadow-sm hover:bg-slate-50">
+                                <span className="flex h-full w-full items-center justify-center bg-gradient-primary rounded-full text-white font-medium text-xs">
+                                    AS
+                                </span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel className="font-normal">
+                                <div className="flex flex-col space-y-1">
+                                    <p className="text-sm font-medium leading-none">Arnav Shirwadkar</p>
+                                    <p className="text-xs leading-none text-muted-foreground">arnav@example.com</p>
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>Profile</DropdownMenuItem>
+                            <DropdownMenuItem>Billing</DropdownMenuItem>
+                            <DropdownMenuItem>Settings</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600 focus:text-red-600">Log out</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <div className="h-9 w-9 rounded-full bg-slate-200 animate-pulse" />
+                )}
             </div>
         </header>
     );
