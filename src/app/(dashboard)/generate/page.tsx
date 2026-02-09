@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
-import { Sparkles, Loader2, CheckCircle2, AlertCircle, ArrowRight, Wand2, Search, FileText, Globe } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle2, AlertCircle, ArrowRight, Wand2, Search, FileText, Globe, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
