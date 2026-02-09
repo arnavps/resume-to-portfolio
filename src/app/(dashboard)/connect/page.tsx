@@ -135,7 +135,7 @@ export default function ConnectPage() {
                                     variant="outline"
                                     className="w-full"
                                     onClick={() => document.getElementById('resume-upload')?.click()}
-                                    isLoading={uploading === 'resume'}
+                                    loading={uploading === 'resume'}
                                     leftIcon={<Upload className="h-4 w-4" />}
                                 >
                                     Upload PDF
@@ -187,7 +187,7 @@ export default function ConnectPage() {
                                     variant="outline"
                                     className="w-full"
                                     onClick={() => document.getElementById('linkedin-upload')?.click()}
-                                    isLoading={uploading === 'linkedin'}
+                                    loading={uploading === 'linkedin'}
                                     leftIcon={<Upload className="h-4 w-4" />}
                                 >
                                     Upload PDF Export
