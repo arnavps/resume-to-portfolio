@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 export default function PreviewPage() {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
-  const portfolioUrl = '/demo-user'; // In a real app, this would be the actual user's portfolio URL
+  const portfolioUrl = '/portfolio/demo-user'; // In a real app, this would be the actual user's portfolio URL
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-100 dark:bg-slate-950 -m-8">
