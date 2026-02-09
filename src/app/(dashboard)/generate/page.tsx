@@ -167,7 +167,7 @@ export default function GeneratePage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link href="/dashboard/preview">
+                            <Link href="/preview">
                                 <Button size="lg" variant="primary" rightIcon={<Eye className="h-5 w-5" />}>
                                     View Live Preview
                                 </Button>
