@@ -28,24 +28,24 @@ interface SidebarItemType {
 
 const menuItems: SidebarItemType[] = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Connect', href: '/dashboard/connect', icon: Users },
-  { name: 'Generate', href: '/dashboard/generate', icon: Sparkles, highlight: true },
+  { name: 'Connect', href: '/connect', icon: Users },
+  { name: 'Generate', href: '/generate', icon: Sparkles, highlight: true },
 ]
 
 const workspaceItems: SidebarItemType[] = [
-  { name: 'Projects', href: '/dashboard/projects', icon: FolderOpen },
-  { name: 'Experience', href: '/dashboard/experience', icon: Calendar },
-  { name: 'Skills', href: '/dashboard/skills', icon: FileText },
-  { name: 'Customize', href: '/dashboard/customize', icon: Palette },
+  { name: 'Projects', href: '/projects', icon: FolderOpen },
+  { name: 'Experience', href: '/experience', icon: Calendar },
+  { name: 'Skills', href: '/skills', icon: FileText },
+  { name: 'Customize', href: '/customize', icon: Palette },
 ]
 
 const analysisItems: SidebarItemType[] = [
-  { name: 'Preview', href: '/dashboard/preview', icon: Eye },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Preview', href: '/preview', icon: Eye },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
 ]
 
 const generalItems: SidebarItemType[] = [
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function Sidebar() {

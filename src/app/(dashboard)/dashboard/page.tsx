@@ -90,13 +90,13 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Link href="/dashboard/generate">
-                        <Button variant="primary" icon={<Sparkles className="h-4 w-4" />}>
+                    <Link href="/generate">
+                        <Button variant="primary" leftIcon={<Sparkles className="h-4 w-4" />}>
                             Update Portfolio
                         </Button>
                     </Link>
-                    <Link href="/dashboard/preview">
-                        <Button variant="outline" icon={<Eye className="h-4 w-4" />}>
+                    <Link href="/preview">
+                        <Button variant="outline" leftIcon={<Eye className="h-4 w-4" />}>
                             View Live
                         </Button>
                     </Link>
@@ -190,19 +190,19 @@ export default function DashboardPage() {
                             title="Sync GitHub"
                             description="Pull latest repositories"
                             icon={<Github className="h-6 w-6 text-indigo-600" />}
-                            href="/dashboard/connect"
+                            href="/connect"
                         />
                         <QuickActionCard
                             title="Edit Projects"
                             description="Manage project details"
                             icon={<FileText className="h-6 w-6 text-purple-600" />}
-                            href="/dashboard/projects"
+                            href="/projects"
                         />
                         <QuickActionCard
                             title="Analytics"
                             description="View visitor insights"
                             icon={<BarChart3 className="h-6 w-6 text-emerald-600" />}
-                            href="/dashboard/analytics"
+                            href="/analytics"
                         />
                     </div>
                 </div>
