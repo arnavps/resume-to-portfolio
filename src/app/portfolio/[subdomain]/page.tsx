@@ -9,9 +9,9 @@ import { MinimalTemplate } from '@/components/templates/MinimalTemplate';
 // We need to make sure these components are exported from their files
 // I will check if they exist, but assuming they do based on previous context.
 
-export default async function PortfolioPage({ params }: { params: { subdomain: string } }) {
+export default async function PortfolioPage({ params }: { params: Promise<{ subdomain: string }> }) {
     const supabase = await createClient();
-    const subdomain = params.subdomain;
+    const { subdomain } = await params;
 
     // 1. Fetch Portfolio by Subdomain
     const { data: portfolio, error: portfolioError } = await supabase
