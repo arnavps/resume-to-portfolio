@@ -39,7 +39,7 @@ interface ResumeData {
 
 export async function parseResumePDF(buffer: Buffer): Promise<ResumeData> {
     return new Promise((resolve, reject) => {
-        const pdfParser = new PDFParser(this, 1); // 1 = text only
+        const pdfParser = new PDFParser(null, 1); // 1 = text only
 
         pdfParser.on("pdfParser_dataError", (errData: any) => console.error(errData.parserError));
         pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
