@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import { PortfolioData } from '@/lib/data/mockData';
 
 // Templates (Lazy load or import map could be better, but direct import is fine for now)
-import ModernTemplate from '@/components/templates/ModernTemplate';
-import CreativeTemplate from '@/components/templates/CreativeTemplate';
-import MinimalTemplate from '@/components/templates/MinimalTemplate';
+import { ModernTemplate } from '@/components/templates/ModernTemplate';
+import { CreativeTemplate } from '@/components/templates/CreativeTemplate';
+import { MinimalTemplate } from '@/components/templates/MinimalTemplate';
 // We need to make sure these components are exported from their files
 // I will check if they exist, but assuming they do based on previous context.
 
