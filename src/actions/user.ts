@@ -1,9 +1,11 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { Database } from '@/lib/types/database.types';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export async function getUserSubdomain() {
-    const supabase = await createClient();
+    const supabase = (await createClient()) as SupabaseClient<Database>;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return null;
