@@ -1,28 +1,39 @@
 'use client';
 
-import { useState } from 'react';
-import { LayoutTemplate, Palette, Type, Layout, Eye, Save, Smartphone, Monitor, Tablet, Check, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LayoutTemplate, Palette, Type, Layout, Eye, Save, Smartphone, Monitor, Tablet, Check, ArrowRight, FileText, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
-import { portfolioData } from '@/lib/data/mockData';
 import { ModernTemplate } from '@/components/templates/ModernTemplate';
 import { MinimalTemplate } from '@/components/templates/MinimalTemplate';
 import { CreativeTemplate } from '@/components/templates/CreativeTemplate';
+import { usePortfolioStore } from '@/lib/store/usePortfolioStore';
+import ContentEditor from '@/components/dashboard/ContentEditor';
+import { savePortfolio } from '@/actions/save-portfolio';
 
 export default function CustomizePage() {
-    const [template, setTemplate] = useState('modern');
-    const [colorTheme, setColorTheme] = useState('indigo');
-    const [fontPair, setFontPair] = useState('inter');
-    const [deviceView, setDeviceView] = useState('desktop');
+    const {
+        data,
+        template,
+        theme,
+        font,
+        deviceView,
+        setTemplate,
+        setTheme,
+        setFont,
+        setDeviceView
+    } = usePortfolioStore();
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState('');
 
     const templates = [
         {
             id: 'modern',
             name: 'Modern',
-            // CSS-based mini preview for Modern (Card/Banner style)
             preview: (
                 <div className="w-full h-full bg-slate-50 relative p-2 flex flex-col gap-1 overflow-hidden">
                     <div className="h-4 bg-white rounded-sm shadow-sm"></div>
@@ -40,7 +51,6 @@ export default function CustomizePage() {
         {
             id: 'minimal',
             name: 'Minimal',
-            // CSS-based mini preview for Minimal (Clean/Typographic)
             preview: (
                 <div className="w-full h-full bg-white relative p-3 flex flex-col gap-2 overflow-hidden border border-slate-100">
                     <div className="h-2 w-1/2 bg-slate-900 rounded-full"></div>
@@ -56,7 +66,6 @@ export default function CustomizePage() {
         {
             id: 'creative',
             name: 'Creative',
-            // CSS-based mini preview for Creative (Dark/Sidebar)
             preview: (
                 <div className="w-full h-full bg-slate-950 relative flex overflow-hidden">
                     <div className="w-1/3 h-full bg-slate-900 p-1 flex flex-col gap-1 border-r border-slate-800">
@@ -87,8 +96,26 @@ export default function CustomizePage() {
         { id: 'mono', name: 'Mono + Sans', class: 'font-mono' },
     ];
 
+    const handleSave = async () => {
+        setIsSaving(true);
+        setSaveMessage('');
+        try {
+            const result = await savePortfolio(data, template, theme, font);
+            if (result.success) {
+                setSaveMessage('Saved successfully!');
+                setTimeout(() => setSaveMessage(''), 3000);
+            } else {
+                setSaveMessage('Failed to save.');
+            }
+        } catch (error) {
+            setSaveMessage('Error saving.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const renderTemplate = () => {
-        const props = { data: portfolioData, theme: colorTheme, font: fontPair };
+        const props = { data, theme, font };
         switch (template) {
             case 'minimal': return <MinimalTemplate {...props} />;
             case 'creative': return <CreativeTemplate {...props} />;
@@ -97,24 +124,25 @@ export default function CustomizePage() {
     }
 
     return (
-        <div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6 animate-fade-in">
+        <div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6 animate-fade-in relative">
             {/* Controls Panel */}
-            <Card className="lg:w-96 flex flex-col h-full border-slate-200 shadow-xl z-10">
+            <Card className="lg:w-96 flex flex-col h-full border-slate-200 shadow-xl z-20 flex-shrink-0">
                 <CardHeader className="border-b border-slate-100 pb-4">
                     <CardTitle className="text-xl">Customize Design</CardTitle>
                     <CardDescription>Personalize your portfolio style.</CardDescription>
                 </CardHeader>
                 <div className="flex-1 overflow-y-auto">
                     <Tabs defaultValue="templates" className="w-full">
-                        <div className="px-6 pt-4">
-                            <TabsList className="w-full grid grid-cols-3">
-                                <TabsTrigger value="templates">Templates</TabsTrigger>
-                                <TabsTrigger value="style">Style</TabsTrigger>
-                                <TabsTrigger value="layout">Layout</TabsTrigger>
+                        <div className="px-6 pt-4 sticky top-0 bg-white z-10 pb-2">
+                            <TabsList className="w-full grid grid-cols-4">
+                                <TabsTrigger value="templates" className="text-xs px-1">Templates</TabsTrigger>
+                                <TabsTrigger value="content" className="text-xs px-1">Content</TabsTrigger>
+                                <TabsTrigger value="style" className="text-xs px-1">Style</TabsTrigger>
+                                <TabsTrigger value="layout" className="text-xs px-1">Layout</TabsTrigger>
                             </TabsList>
                         </div>
 
-                        <TabsContent value="templates" className="p-6 space-y-4">
+                        <TabsContent value="templates" className="p-6 space-y-4 pt-2">
                             <h3 className="text-sm font-medium text-slate-900 mb-3 flex items-center gap-2">
                                 <LayoutTemplate className="h-4 w-4" /> Select Template
                             </h3>
@@ -129,9 +157,7 @@ export default function CustomizePage() {
                                             }`}
                                     >
                                         <div className="aspect-video bg-slate-100 relative group">
-                                            {/* Template Preview Helper */}
                                             {t.preview}
-
                                             {template === t.id && (
                                                 <div className="absolute top-2 right-2 bg-indigo-500 text-white p-1 rounded-full shadow-sm z-10">
                                                     <Check className="h-4 w-4" />
@@ -147,7 +173,15 @@ export default function CustomizePage() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="style" className="p-6 space-y-8">
+                        <TabsContent value="content" className="p-6 pt-2">
+                            <div className="mb-4 flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-slate-500" />
+                                <h3 className="text-sm font-medium text-slate-900">Edit Content</h3>
+                            </div>
+                            <ContentEditor />
+                        </TabsContent>
+
+                        <TabsContent value="style" className="p-6 space-y-8 pt-2">
                             {/* Colors */}
                             <div className="space-y-3">
                                 <h3 className="text-sm font-medium text-slate-900 flex items-center gap-2">
@@ -157,11 +191,11 @@ export default function CustomizePage() {
                                     {colors.map(c => (
                                         <button
                                             key={c.id}
-                                            onClick={() => setColorTheme(c.id)}
-                                            className={`w-10 h-10 rounded-full ${c.class} shadow-sm transition-all flex items-center justify-center ${colorTheme === c.id ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'hover:scale-105'
+                                            onClick={() => setTheme(c.id)}
+                                            className={`w-10 h-10 rounded-full ${c.class} shadow-sm transition-all flex items-center justify-center ${theme === c.id ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'hover:scale-105'
                                                 }`}
                                         >
-                                            {colorTheme === c.id && <Check className="h-5 w-5 text-white" />}
+                                            {theme === c.id && <Check className="h-5 w-5 text-white" />}
                                         </button>
                                     ))}
                                 </div>
@@ -176,21 +210,21 @@ export default function CustomizePage() {
                                     {fonts.map(f => (
                                         <div
                                             key={f.id}
-                                            onClick={() => setFontPair(f.id)}
-                                            className={`p-3 rounded-lg border cursor-pointer flex items-center justify-between transition-all ${fontPair === f.id
+                                            onClick={() => setFont(f.id)}
+                                            className={`p-3 rounded-lg border cursor-pointer flex items-center justify-between transition-all ${font === f.id
                                                 ? 'border-indigo-500 bg-indigo-50/50'
                                                 : 'border-slate-200 hover:border-slate-300'
                                                 }`}
                                         >
                                             <span className={`text-sm ${f.class}`}>{f.name}</span>
-                                            {fontPair === f.id && <Check className="h-4 w-4 text-indigo-600" />}
+                                            {font === f.id && <Check className="h-4 w-4 text-indigo-600" />}
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="layout" className="p-6">
+                        <TabsContent value="layout" className="p-6 pt-2">
                             <div className="text-center py-8 text-slate-500">
                                 <Layout className="h-10 w-10 mx-auto mb-3 opacity-20" />
                                 <p>Layout options coming soon</p>
@@ -199,8 +233,24 @@ export default function CustomizePage() {
                     </Tabs>
                 </div>
                 <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                    <Button className="w-full" size="lg" variant="primary" leftIcon={<Save className="h-4 w-4" />}>
-                        Save Changes
+                    <Button
+                        className="w-full"
+                        size="lg"
+                        variant="primary"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="mr-2 h-4 w-4" />
+                                {saveMessage || 'Save Changes'}
+                            </>
+                        )}
                     </Button>
                 </div>
             </Card>
