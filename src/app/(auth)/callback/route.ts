@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const error_description = searchParams.get('error_description');
 
     if (error) {
-        return NextResponse.redirect(`${origin}/login?error=${error}&message=${error_description}`);
+        return NextResponse.redirect(`${origin}/customize?error=${error}&message=${error_description}`);
     }
 
     if (code) {
@@ -23,5 +23,5 @@ export async function GET(request: Request) {
     }
 
     // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/login?error=auth-code-error`);
+    return NextResponse.redirect(`${origin}/customize?error=auth-code-error`);
 }
