@@ -11,11 +11,13 @@ export async function getUserSubdomain() {
     if (!user) return null;
 
     // First try to fetch from portfolios table
-    const { data: portfolio } = await supabase
+    const { data } = await supabase
         .from('portfolios')
         .select('subdomain')
         .eq('user_id', user.id)
         .single();
+
+    const portfolio = data as { subdomain: string | null } | null;
 
     if (portfolio?.subdomain) {
         return portfolio.subdomain;
