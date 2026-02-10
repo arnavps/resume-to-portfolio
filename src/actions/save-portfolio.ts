@@ -88,39 +88,41 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
 
         // 5. Insert Experience
         if (data.experience && data.experience.length > 0) {
-            const experienceInserts = data.experience.map((job, index) => ({
-                portfolio_id: portfolioId,
-                company: job.company,
-                role: job.role,
-                description: job.description,
-                start_date: job.period.split('-')[0].trim(), // Approximate parsing
-                // end_date: ... (would need better parsing but storing raw string is not supported by date type usually, forcing start_date current_timestamp for now if parsing fails)
-                // Actually start_date is 'text' in some schemas or date. 
-                // In database.types.ts: start_date: string (but likely format 'YYYY-MM-DD'). 
-                // If the DB column is strict DATE, this will fail. 
-                // Let's assume for now we use a dummy date or try to parse. 
-                // Since user input '2022 - Present' is unstructured, we might have issues.
-                // WORKAROUND: For this MVP, we will try to just put current date if parsing fails, or better, 
-                // we should check if the schema allows text.
-                // database.types.ts says `start_date: string`. Usually created by supabase-js generator from standard PG types.
-                // If PostgreSQL type is `date`, '2022' might work (Jan 1). 'Present' won't.
-                // Let's rely on the fact that database.types.ts shows `start_date: string`, but likely it expects ISO date.
-                // TO BE SAFE: I will use current date for all dates to avoid 500 errors, or Try parse.
-                // Actually, I'll modify the loop to handle it gracefully.
-                start_date: new Date().toISOString().split('T')[0], // Fallback
-                display_order: index,
-                is_visible: true
-            }));
+            const experienceInserts = data.experience.map((job, index) => {
+                // Try to parse start date from "YYYY - ..." or "Month YYYY"
+                // Simple fallback to current date if parsing fails, to satisfy DB constraint
+                let startDate = new Date().toISOString().split('T')[0];
+                try {
+                    const yearStr = job.period.split('-')[0].trim();
+                    const year = parseInt(yearStr.match(/\d{4}/)?.[0] || '');
+                    if (year && !isNaN(year)) {
+                        startDate = `${year}-01-01`;
+                    }
+                } catch (e) {
+                    // ignore parse error
+                }
 
-            // Note: Preventing crashes by valid date strings is crucial.
+                return {
+                    portfolio_id: portfolioId,
+                    company: job.company,
+                    role: job.role,
+                    description: job.description,
+                    start_date: startDate,
+                    display_order: index,
+                    is_visible: true
+                };
+            });
 
             const { error: expError } = await supabase.from('experiences').insert(experienceInserts);
-            if (expError) console.error('Error saving experience:', expError);
+            if (expError) {
+                console.error('Error saving experience:', expError);
+                throw new Error(`Experience save failed: ${expError.message}`);
+            }
         }
 
         return { success: true, message: 'Portfolio saved successfully' };
-    } catch (error) {
-        console.error('Save error:', error);
-        return { error: 'Failed to save portfolio' };
+    } catch (error: any) {
+        console.error('Save error full object:', JSON.stringify(error, null, 2));
+        return { error: error.message || 'Failed to save portfolio' };
     }
 }
