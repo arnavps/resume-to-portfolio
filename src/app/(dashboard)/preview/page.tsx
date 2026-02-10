@@ -81,11 +81,17 @@ export default function PreviewPage() {
       </div>
 
       {/* Preview Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar flex items-start justify-center bg-slate-100/50 dark:bg-black/20 p-8">
+      <div className={cn(
+        "flex-1 overflow-y-auto custom-scrollbar flex justify-center bg-slate-100/50 dark:bg-black/20 p-8",
+        device === 'desktop' ? "items-center" : "items-start"
+      )}>
         <div
-          className="transition-transform duration-300 ease-in-out origin-top"
+          className={cn(
+            "transition-transform duration-300 ease-in-out origin-top",
+            device === 'desktop' ? "w-full h-full transform-none" : ""
+          )}
           style={{
-            transform: `scale(${device === 'tablet' ? 0.75 : device === 'mobile' ? 0.9 : 1})`,
+            transform: device !== 'desktop' ? `scale(${device === 'tablet' ? 0.75 : device === 'mobile' ? 0.9 : 1})` : undefined,
             marginTop: device !== 'desktop' ? '20px' : '0',
             marginBottom: '40px'
           }}
@@ -93,17 +99,10 @@ export default function PreviewPage() {
           <div
             className={cn(
               "bg-white transition-all duration-500 ease-in-out shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800",
-              device === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-8 border-slate-900" :
-                device === 'tablet' ? "w-[768px] h-[1024px] rounded-[2rem] border-8 border-slate-900" :
-                  "w-full h-full rounded-lg" // Desktop should fit container, but we need fixed dimensions if we are scaling content? 
-              // Actually for desktop in PreviewPage, we usually want fully responsive content filling the iframe.
+              device === 'mobile' ? "w-[375px] h-[812px] rounded-[3rem] border-8 border-slate-900 mx-auto" :
+                device === 'tablet' ? "w-[768px] h-[1024px] rounded-[2rem] border-8 border-slate-900 mx-auto" :
+                  "w-full h-full rounded-lg"
             )}
-            style={device === 'desktop' ? { width: '100%', height: '100%' } : {}}
-          // Wait, for desktop, existing code was "w-full h-full". 
-          // If we scale 1, we just need to ensure the container has height.
-          // The outer container "flex-1" has height. items-start means it might shrink?
-          // "h-[calc(100vh-...)]" on parent determines height.
-          // If device == desktop, we want it to fill the available space.
           >
             <iframe
               src={portfolioUrl}
