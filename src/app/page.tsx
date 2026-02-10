@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { templates } from '@/lib/data/templates';
 
 export default function HomePage() {
     const fadeInUp = {
@@ -288,23 +289,43 @@ export default function HomePage() {
                         variants={staggerContainer}
                         className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
                     >
-                        {['Modern', 'Minimal', 'Creative'].map((template) => (
-                            <motion.div variants={fadeInUp} key={template}>
-                                <Card interactive className="overflow-hidden group h-full">
-                                    <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 relative">
-                                        <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-semibold">
-                                            {template} Template Preview
+                        {templates.slice(0, 3).map((template) => (
+                            <motion.div variants={fadeInUp} key={template.id}>
+                                <Card interactive className="overflow-hidden group h-full border-slate-200 hover:shadow-lg transition-all">
+                                    <div className="aspect-[4/3] bg-gradient-to-br from-indigo-50 to-purple-50 relative overflow-hidden">
+                                        {/* Placeholder for template image - using icon for now */}
+                                        <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                                            <Badge variant="secondary" className="scale-150 opacity-50">
+                                                {template.category}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
+                                            <Link href="/dashboard">
+                                                <Button variant="secondary" size="sm">
+                                                    Use Template
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
                                     <CardContent className="p-6">
-                                        <h3 className="font-bold text-xl mb-2">{template}</h3>
-                                        <Badge variant="primary" className="mb-3">Free</Badge>
-                                        <p className="text-slate-600 text-sm mb-4">
-                                            Perfect for showcasing your projects with a {template.toLowerCase()} aesthetic
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="font-bold text-xl">{template.name}</h3>
+                                            {template.isPremium ? (
+                                                <Badge variant="accent" className="bg-amber-100 text-amber-700 border-amber-200">PRO</Badge>
+                                            ) : (
+                                                <Badge variant="primary" className="bg-indigo-100 text-indigo-700 border-indigo-200">Free</Badge>
+                                            )}
+                                        </div>
+                                        <p className="text-slate-600 text-sm mb-4 line-clamp-2">
+                                            {template.description}
                                         </p>
-                                        <Button variant="ghost" size="sm" className="w-full group-hover:bg-indigo-50">
-                                            Use This Template
-                                        </Button>
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            <Check className="h-3 w-3 text-emerald-500" />
+                                            <span>Responsive</span>
+                                            <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                            <span>SEO Optimized</span>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </motion.div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { Bell, Search, User, Settings, LogOut, CreditCard, Sparkles, Check } from 'lucide-react';
+import { Bell, Search, User, Settings, LogOut, CreditCard, Sparkles, Check, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -138,6 +139,13 @@ export default function Header() {
                                     <span>Upgrade Plan</span>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="cursor-pointer">
+                                <Link href="/help" className="flex items-center w-full">
+                                    <HelpCircle className="mr-2 h-4 w-4" />
+                                    <span>Help & Support</span>
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer">
                                 <LogOut className="mr-2 h-4 w-4" />
