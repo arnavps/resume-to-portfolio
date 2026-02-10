@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
         const githubUser = await userResponse.json();
 
         // Save to data_sources
-        const { data, error } = await supabase
-            .from('data_sources')
+        const { data, error } = await (supabase
+            .from('data_sources') as any)
             .upsert({
                 user_id: user.id,
                 source_type: 'github',
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
                 raw_data: githubUser,
                 last_synced_at: new Date().toISOString(),
                 sync_status: 'completed'
-            } as any)
+            })
             .select()
             .single();
 
@@ -75,12 +75,12 @@ export async function POST(request: NextRequest) {
         }
 
         // Update user profile
-        await supabase
-            .from('users')
+        await (supabase
+            .from('users') as any)
             .update({
                 github_username: githubUser.login,
                 avatar_url: githubUser.avatar_url
-            } as any)
+            })
             .eq('id', user.id);
 
         return NextResponse.json({
