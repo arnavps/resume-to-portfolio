@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -9,22 +10,25 @@ import { Label } from '@/components/ui/label';
 import { Github, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignupPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
 
-    const handleEmailSubmmit = async (e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setErrorMsg('');
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signUp({
                 email,
-                password
+                password,
+                options: {
+                    emailRedirectTo: `${location.origin}/auth/callback`
+                }
             });
 
             if (error) {
@@ -32,10 +36,11 @@ export default function LoginPage() {
                 return;
             }
 
-            // Successfully logged in
-            router.push('/customize');
-            router.refresh();
-        } catch (error) {
+            // Check if email confirmation is required/sent
+            // For now, assume success means we can try to login or show a message
+            setErrorMsg('Check your email for a confirmation link.');
+            // router.push('/login?message=Check your email to confirm your account');
+        } catch (error: any) {
             setErrorMsg('Something went wrong');
         } finally {
             setIsLoading(false);
@@ -64,14 +69,17 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
             <Card className="w-full max-w-md shadow-lg border-slate-200 dark:border-slate-800">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
                     <CardDescription className="text-center">
-                        Enter your email to sign in to your account
+                        Enter your email below to create your account
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                     {errorMsg && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
+                        <div className={`p-3 rounded-md text-sm flex items-center gap-2 ${errorMsg.includes('Check your email')
+                            ? 'bg-green-50 text-green-600'
+                            : 'bg-red-50 text-red-600'
+                            }`}>
                             <AlertCircle className="h-4 w-4" />
                             {errorMsg}
                         </div>
@@ -96,7 +104,7 @@ export default function LoginPage() {
                             </span>
                         </div>
                     </div>
-                    <form onSubmit={handleEmailSubmmit}>
+                    <form onSubmit={handleSignup}>
                         <div className="grid gap-2">
                             <div className="grid gap-1">
                                 <Label htmlFor="email">Email</Label>
@@ -123,16 +131,16 @@ export default function LoginPage() {
                             </div>
                             <Button className="w-full mt-4" type="submit" disabled={isLoading}>
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Sign In
+                                Sign Up
                             </Button>
                         </div>
                     </form>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                     <div className="text-sm text-slate-500 text-center">
-                        Don&apos;t have an account?{' '}
-                        <Link href="/signup" className="underline underline-offset-4 hover:text-primary">
-                            Sign up
+                        Already have an account?{' '}
+                        <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                            Sign in
                         </Link>
                     </div>
                 </CardFooter>
