@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
                 raw_data: githubUser,
                 last_synced_at: new Date().toISOString(),
                 sync_status: 'completed'
-            })
+            } as any)
             .select()
             .single();
 
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
             .update({
                 github_username: githubUser.login,
                 avatar_url: githubUser.avatar_url
-            })
+            } as any)
             .eq('id', user.id);
 
         return NextResponse.json({
