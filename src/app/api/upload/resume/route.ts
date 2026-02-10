@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
         const resumeData = await parseResumePDF(buffer);
 
         // Save to data_sources
-        const { data, error } = await supabase
-            .from('data_sources')
+        const { data, error } = await (supabase
+            .from('data_sources') as any)
             .upsert({
                 user_id: user.id,
                 source_type: 'resume',
