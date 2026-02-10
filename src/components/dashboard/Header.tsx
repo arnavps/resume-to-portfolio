@@ -64,42 +64,54 @@ export default function Header() {
 
             <div className="flex items-center gap-4">
                 {/* Notifications */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-slate-500 hover:bg-slate-100 hover:text-indigo-600">
-                            <Bell className="h-5 w-5" />
-                            {notifications.some(n => n.unread) && (
-                                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-                            )}
-                            <span className="sr-only">Notifications</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80">
-                        <DropdownMenuLabel className="flex items-center justify-between">
-                            Notifications
-                            <Badge variant="secondary" className="text-xs font-normal">3 Unread</Badge>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <div className="max-h-[300px] overflow-y-auto">
-                            {notifications.map((notification) => (
-                                <DropdownMenuItem key={notification.id} className="cursor-pointer flex flex-col items-start gap-1 p-3">
-                                    <div className="flex items-center justify-between w-full">
-                                        <span className="font-medium text-sm">{notification.title}</span>
-                                        {notification.unread && <div className="h-1.5 w-1.5 rounded-full bg-indigo-500"></div>}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground line-clamp-2">
-                                        {notification.description}
-                                    </p>
-                                    <span className="text-[10px] text-slate-400">{notification.time}</span>
-                                </DropdownMenuItem>
-                            ))}
-                        </div>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="w-full text-center justify-center text-xs text-indigo-600 font-medium cursor-pointer">
-                            View all notifications
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Notifications */}
+                {mounted ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="relative text-slate-500 hover:bg-slate-100 hover:text-indigo-600">
+                                <Bell className="h-5 w-5" />
+                                {notifications.some(n => n.unread) && (
+                                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                                )}
+                                <span className="sr-only">Notifications</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-80">
+                            {/* ... content ... */}
+                            <DropdownMenuLabel className="flex items-center justify-between">
+                                Notifications
+                                <Badge variant="secondary" className="text-xs font-normal">3 Unread</Badge>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <div className="max-h-[300px] overflow-y-auto">
+                                {notifications.map((notification) => (
+                                    <DropdownMenuItem key={notification.id} className="cursor-pointer flex flex-col items-start gap-1 p-3">
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="font-medium text-sm">{notification.title}</span>
+                                            {notification.unread && <div className="h-1.5 w-1.5 rounded-full bg-indigo-500"></div>}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">
+                                            {notification.description}
+                                        </p>
+                                        <span className="text-[10px] text-slate-400">{notification.time}</span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </div>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="w-full text-center justify-center text-xs text-indigo-600 font-medium cursor-pointer">
+                                View all notifications
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <Button variant="ghost" size="icon" className="relative text-slate-500 hover:bg-slate-100 hover:text-indigo-600">
+                        <Bell className="h-5 w-5" />
+                        {notifications.some(n => n.unread) && (
+                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                        )}
+                        <span className="sr-only">Notifications</span>
+                    </Button>
+                )}
 
                 <div className="h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
 

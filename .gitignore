@@ -1,14 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+.pnp.js
 
 # testing
 /coverage
@@ -30,8 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# local env files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -44,166 +37,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-Thumbs.db
-.DS_Store?
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
-tmp/
-temp/
-
-# Editor directories and files
+# editor
 .vscode/*
 !.vscode/extensions.json
 .idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+*.swp
+*.swo
 
-# Supabase
+# supabase
 supabase/.temp
-
-# Local development
-.local
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# AI/ML model files
-*.model
-*.pkl
-*.joblib
-
-# Generated files
-dist/
-build/
-
-# Cache directories
-.cache/
-.parcel-cache/
-
-# Testing
-coverage/
-.nyc_output/
-junit.xml
-
-# Sentry
-.sentryclirc
-
-# Storybook
-storybook-static/
-
-# Lighthouse
-.lighthouseci/
-
-# Prettier
-.prettierignore
-
-# Husky
-.husky/_/
-
-# Commitlint
-.commitlintrc.js
-
-# Renovate
-renovate.json
-
-# GitHub Actions
-.github/workflows/*.local
-
-# Local configuration
-config.local.js
-config.local.json
-
-# Backup files
-*.bak
-*.backup
-
-# Lock files (keep package-lock.json but ignore others)
-yarn.lock
-pnpm-lock.yaml
-
-# End to End Testing
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-
-# Supabase Additional
 supabase/.branches
-
