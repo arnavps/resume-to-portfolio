@@ -3,11 +3,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { PortfolioData } from '@/lib/data/mockData';
 import { Database } from '@/lib/types/database.types';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 type PortfolioRow = Database['public']['Tables']['portfolios']['Row'];
+type SkillInsert = Database['public']['Tables']['skills']['Insert'];
+type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
+type ExperienceInsert = Database['public']['Tables']['experiences']['Insert'];
 
 export async function savePortfolio(data: PortfolioData, template: string, theme: string, font: string) {
-    const supabase = await createClient();
+    const supabase = (await createClient()) as SupabaseClient<Database>;
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -47,7 +51,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
 
         // 3. Insert Skills
         if (data.skills) {
-            const skillInserts: any[] = [];
+            const skillInserts: SkillInsert[] = [];
 
             // Helper to process skills
             const processSkills = (skills: string[], category: string) => {
@@ -58,7 +62,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
                         category: category,
                         display_order: index,
                         is_visible: true
-                    });
+                    } as SkillInsert);
                 });
             };
 
@@ -74,7 +78,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
 
         // 4. Insert Projects
         if (data.projects && data.projects.length > 0) {
-            const projectInserts = data.projects.map((project, index) => ({
+            const projectInserts: ProjectInsert[] = data.projects.map((project, index) => ({
                 portfolio_id: portfolioId,
                 title: project.title,
                 slug: project.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + `-${Date.now()}`, // Ensure unique slug
@@ -84,7 +88,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
                 demo_url: project.link,
                 display_order: index,
                 is_visible: true
-            }));
+            } as ProjectInsert));
 
             const { error: projectsError } = await supabase.from('projects').insert(projectInserts);
             if (projectsError) console.error('Error saving projects:', projectsError);
@@ -92,7 +96,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
 
         // 5. Insert Experience
         if (data.experience && data.experience.length > 0) {
-            const experienceInserts = data.experience.map((job, index) => {
+            const experienceInserts: ExperienceInsert[] = data.experience.map((job, index) => {
                 // Try to parse start date from "YYYY - ..." or "Month YYYY"
                 // Simple fallback to current date if parsing fails, to satisfy DB constraint
                 let startDate = new Date().toISOString().split('T')[0];
@@ -114,7 +118,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
                     start_date: startDate,
                     display_order: index,
                     is_visible: true
-                };
+                } as ExperienceInsert;
             });
 
             const { error: expError } = await supabase.from('experiences').insert(experienceInserts);
