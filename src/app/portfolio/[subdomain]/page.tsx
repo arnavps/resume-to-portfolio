@@ -31,11 +31,8 @@ export default async function PortfolioPage({ params }: { params: Promise<{ subd
     if (portfolioError || !portfolio) {
         // Fallback for "demo-user" to static mock data if DB missing (optional, but good for "Open Live" default link)
         if (subdomain === 'demo-user') {
-            // We can return the static view manually or redirect.
-            // For now, let's treat it as 404 if not found in DB to encourage real usage.
-            // OR we can check if it really exists.
-            // Let's return 404 to be correct.
-            return notFound();
+            const { portfolioData } = await import('@/lib/data/mockData');
+            return <ModernTemplate data={portfolioData} theme="indigo" font="sans" />;
         }
         return notFound();
     }

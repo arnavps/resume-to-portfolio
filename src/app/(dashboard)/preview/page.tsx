@@ -1,15 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Smartphone, Tablet, Monitor, ExternalLink, Share2, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { getUserSubdomain } from '@/actions/user';
 
 export default function PreviewPage() {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [copied, setCopied] = useState(false);
-  const portfolioUrl = '/portfolio/demo-user'; // In a real app, this would be the actual user's portfolio URL
+  const [portfolioUrl, setPortfolioUrl] = useState('/portfolio/demo-user');
+
+  useEffect(() => {
+    async function fetchSubdomain() {
+      const subdomain = await getUserSubdomain();
+      if (subdomain) {
+        setPortfolioUrl(`/portfolio/${subdomain}`);
+      }
+    }
+    fetchSubdomain();
+  }, []);
 
   const handleShare = () => {
     const fullUrl = window.location.origin + portfolioUrl;
