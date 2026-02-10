@@ -2,6 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { PortfolioData } from '@/lib/data/mockData';
+import { Database } from '@/lib/types/database.types';
+
+type PortfolioRow = Database['public']['Tables']['portfolios']['Row'];
 
 export async function savePortfolio(data: PortfolioData, template: string, theme: string, font: string) {
     const supabase = await createClient();
@@ -23,15 +26,16 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
             updated_at: new Date().toISOString()
         };
 
-        const { data: portfolio, error: portfolioError } = await supabase
+        const { data: rawPortfolio, error: portfolioError } = await supabase
             .from('portfolios')
             .upsert(payload, { onConflict: 'user_id' })
             .select()
             .single();
 
         if (portfolioError) throw portfolioError;
-        if (!portfolio) throw new Error('Failed to create/update portfolio');
+        if (!rawPortfolio) throw new Error('Failed to create/update portfolio');
 
+        const portfolio = rawPortfolio as PortfolioRow;
         const portfolioId = portfolio.id;
 
         // 2. Clear existing content (Wipe & Replace strategy for simplicity/consistency)
