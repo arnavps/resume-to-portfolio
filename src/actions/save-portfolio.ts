@@ -26,7 +26,7 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
             user_id: user.id,
             subdomain: user.email?.split('@')[0] || user.id,
             template_id: template,
-            color_scheme: { primary: theme },
+            color_scheme: { primary: theme, font: font },
             updated_at: new Date().toISOString()
         };
 

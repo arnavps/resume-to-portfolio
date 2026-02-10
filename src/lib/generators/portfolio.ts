@@ -1,4 +1,5 @@
-import { supabase } from '@/lib/supabase/client';
+import { supabase as typedSupabase } from '@/lib/supabase/client';
+const supabase: any = typedSupabase;
 import { createGitHubClient } from '@/lib/github/client';
 import {
     generateProjectNarrative,
@@ -160,9 +161,9 @@ export class PortfolioGenerator {
             .eq('user_id', this.userId);
 
         return {
-            github: data?.find(d => d.source_type === 'github'),
-            resume: data?.find(d => d.source_type === 'resume'),
-            linkedin: data?.find(d => d.source_type === 'linkedin')
+            github: data?.find((d: any) => d.source_type === 'github'),
+            resume: data?.find((d: any) => d.source_type === 'resume'),
+            linkedin: data?.find((d: any) => d.source_type === 'linkedin')
         };
     }
 

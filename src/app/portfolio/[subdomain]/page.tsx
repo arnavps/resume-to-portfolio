@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { PortfolioData } from '@/lib/data/mockData';
+import { Database } from '@/lib/types/database.types';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 // Templates (Lazy load or import map could be better, but direct import is fine for now)
 import { ModernTemplate } from '@/components/templates/ModernTemplate';
@@ -10,7 +12,7 @@ import { MinimalTemplate } from '@/components/templates/MinimalTemplate';
 // I will check if they exist, but assuming they do based on previous context.
 
 export default async function PortfolioPage({ params }: { params: Promise<{ subdomain: string }> }) {
-    const supabase = await createClient();
+    const supabase: any = await createClient();
     const { subdomain } = await params;
 
     // 1. Fetch Portfolio by Subdomain
@@ -56,24 +58,18 @@ export default async function PortfolioPage({ params }: { params: Promise<{ subd
             email: portfolio.users?.email ? `mailto:${portfolio.users.email}` : '#'
         },
         skills: {
-            frontend: skills?.filter(s => s.category === 'Frontend').map(s => s.skill_name) || [],
-            backend: skills?.filter(s => s.category === 'Backend').map(s => s.skill_name) || [],
-            tools: skills?.filter(s => s.category === 'Tools').map(s => s.skill_name) || []
+            frontend: skills?.filter((s: any) => s.category === 'Frontend').map((s: any) => s.skill_name) || [],
+            backend: skills?.filter((s: any) => s.category === 'Backend').map((s: any) => s.skill_name) || [],
+            tools: skills?.filter((s: any) => s.category === 'Tools').map((s: any) => s.skill_name) || []
         },
-        projects: projects?.map(p => ({
-            id: p.id, // converting string uuid to likely number expected? No, mockData interface might expect number.
-            // Quick check: mockData has `id: number`. We might need to cast or change interface.
-            // For now, I will cast to any or just pass string if component handles it.
-            // Ideally update interface, but to minimize changes:
-            // We'll use a hack or just pass it.
-            // Actually, let's just use `any` cast for ID to avoid TS error if it expects number.
+        projects: projects?.map((p: any) => ({
             id: p.id as any,
             title: p.title,
             description: p.short_description || '',
             tags: typeof p.technologies === 'string' ? JSON.parse(p.technologies) : (p.technologies || []), // It might be JSON object or string array depending on how Supabase returns it.
             link: p.demo_url || '#'
         })) || [],
-        experience: experiences?.map(e => ({
+        experience: experiences?.map((e: any) => ({
             id: e.id as any,
             role: e.role,
             company: e.company,
@@ -83,11 +79,18 @@ export default async function PortfolioPage({ params }: { params: Promise<{ subd
     };
 
     // 4. Render Template
-    const TemplateComponent = {
+    // 4. Render Template
+    const templates = {
         'modern-v1': ModernTemplate,
         'creative-studio': CreativeTemplate,
         'minimal-mono': MinimalTemplate
-    }[portfolio.template_id] || ModernTemplate;
+    };
 
-    return <TemplateComponent data={portfolioData} />;
+    const templateId = portfolio.template_id as keyof typeof templates;
+    const TemplateComponent = templates[templateId] || ModernTemplate;
+
+    const theme = (portfolio.color_scheme as any)?.primary || 'indigo';
+    const font = (portfolio.color_scheme as any)?.font || 'sans';
+
+    return <TemplateComponent data={portfolioData} theme={theme} font={font} />;
 }

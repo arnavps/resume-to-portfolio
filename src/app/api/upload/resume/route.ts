@@ -4,7 +4,7 @@ import { parseResumePDF } from '@/lib/parsers/resume';
 
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient();
+        const supabase: any = await createClient();
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
         const resumeData = await parseResumePDF(buffer);
 
         // Save to data_sources
-        const { data, error } = await (supabase
-            .from('data_sources') as any)
+        const { data, error } = await supabase
+            .from('data_sources')
             .upsert({
                 user_id: user.id,
                 source_type: 'resume',
