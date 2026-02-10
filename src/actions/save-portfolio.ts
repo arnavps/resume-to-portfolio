@@ -70,67 +70,68 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
             if (data.skills.backend) processSkills(data.skills.backend, 'Backend');
             if (data.skills.tools) processSkills(data.skills.tools, 'Tools');
 
-            if (skillInserts.length > 0) {
-                const { error: skillsError } = await supabase.from('skills').insert(skillInserts);
+            {
+                const { error: skillsError } = await supabase.from('skills').insert(skillInserts as any);
                 if (skillsError) console.error('Error saving skills:', skillsError);
             }
         }
+    }
 
         // 4. Insert Projects
         if (data.projects && data.projects.length > 0) {
-            const projectInserts: ProjectInsert[] = data.projects.map((project, index) => ({
+        const projectInserts = data.projects.map((project, index) => ({
+            portfolio_id: portfolioId,
+            title: project.title,
+            slug: project.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + `-${Date.now()}`, // Ensure unique slug
+            short_description: project.description,
+            source: 'manual',
+            technologies: JSON.stringify(project.tags), // Storing tags as JSON
+            demo_url: project.link,
+            display_order: index,
+            is_visible: true
+        }));
+
+        const { error: projectsError } = await supabase.from('projects').insert(projectInserts as any);
+        if (projectsError) console.error('Error saving projects:', projectsError);
+    }
+
+    // 5. Insert Experience
+    if (data.experience && data.experience.length > 0) {
+        const experienceInserts = data.experience.map((job, index) => {
+            // Try to parse start date from "YYYY - ..." or "Month YYYY"
+            // Simple fallback to current date if parsing fails, to satisfy DB constraint
+            let startDate = new Date().toISOString().split('T')[0];
+            try {
+                const yearStr = job.period.split('-')[0].trim();
+                const year = parseInt(yearStr.match(/\d{4}/)?.[0] || '');
+                if (year && !isNaN(year)) {
+                    startDate = `${year}-01-01`;
+                }
+            } catch (e) {
+                // ignore parse error
+            }
+
+            return {
                 portfolio_id: portfolioId,
-                title: project.title,
-                slug: project.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + `-${Date.now()}`, // Ensure unique slug
-                short_description: project.description,
-                source: 'manual',
-                technologies: JSON.stringify(project.tags), // Storing tags as JSON
-                demo_url: project.link,
+                company: job.company,
+                role: job.role,
+                description: job.description,
+                start_date: startDate,
                 display_order: index,
                 is_visible: true
-            } as ProjectInsert));
+            };
+        });
 
-            const { error: projectsError } = await supabase.from('projects').insert(projectInserts);
-            if (projectsError) console.error('Error saving projects:', projectsError);
+        const { error: expError } = await supabase.from('experiences').insert(experienceInserts as any);
+        if (expError) {
+            console.error('Error saving experience:', expError);
+            throw new Error(`Experience save failed: ${expError.message}`);
         }
-
-        // 5. Insert Experience
-        if (data.experience && data.experience.length > 0) {
-            const experienceInserts: ExperienceInsert[] = data.experience.map((job, index) => {
-                // Try to parse start date from "YYYY - ..." or "Month YYYY"
-                // Simple fallback to current date if parsing fails, to satisfy DB constraint
-                let startDate = new Date().toISOString().split('T')[0];
-                try {
-                    const yearStr = job.period.split('-')[0].trim();
-                    const year = parseInt(yearStr.match(/\d{4}/)?.[0] || '');
-                    if (year && !isNaN(year)) {
-                        startDate = `${year}-01-01`;
-                    }
-                } catch (e) {
-                    // ignore parse error
-                }
-
-                return {
-                    portfolio_id: portfolioId,
-                    company: job.company,
-                    role: job.role,
-                    description: job.description,
-                    start_date: startDate,
-                    display_order: index,
-                    is_visible: true
-                } as ExperienceInsert;
-            });
-
-            const { error: expError } = await supabase.from('experiences').insert(experienceInserts);
-            if (expError) {
-                console.error('Error saving experience:', expError);
-                throw new Error(`Experience save failed: ${expError.message}`);
-            }
-        }
-
-        return { success: true, message: 'Portfolio saved successfully' };
-    } catch (error: any) {
-        console.error('Save error full object:', JSON.stringify(error, null, 2));
-        return { error: error.message || 'Failed to save portfolio' };
     }
+
+    return { success: true, message: 'Portfolio saved successfully' };
+} catch (error: any) {
+    console.error('Save error full object:', JSON.stringify(error, null, 2));
+    return { error: error.message || 'Failed to save portfolio' };
+}
 }
