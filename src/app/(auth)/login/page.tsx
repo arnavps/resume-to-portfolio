@@ -1,4 +1,3 @@
-'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -6,20 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Github, Loader2 } from 'lucide-react';
+import { Github, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { toast } from 'sonner';
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
     const supabase = createClient();
 
     const handleEmailSubmmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMsg('');
 
         try {
             const { error } = await supabase.auth.signInWithPassword({
@@ -28,15 +28,15 @@ export default function LoginPage() {
             });
 
             if (error) {
-                toast.error(error.message);
+                setErrorMsg(error.message);
                 return;
             }
 
-            toast.success('Logged in successfully');
-            router.push('/dashboard');
+            // Successfully logged in
+            router.push('/customize');
             router.refresh();
         } catch (error) {
-            toast.error('Something went wrong');
+            setErrorMsg('Something went wrong');
         } finally {
             setIsLoading(false);
         }
@@ -44,17 +44,16 @@ export default function LoginPage() {
 
     const handleGithubLogin = async () => {
         setIsLoading(true);
+        setErrorMsg('');
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'github',
-                options: {
-                    redirectTo: `${location.origin}/auth/callback`
-                }
+                redirectTo: `${location.origin}/auth/callback`
             });
 
             if (error) throw error;
         } catch (error: any) {
-            toast.error(error.message);
+            setErrorMsg(error.message);
             setIsLoading(false);
         }
     };
@@ -69,6 +68,12 @@ export default function LoginPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
+                    {errorMsg && (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4" />
+                            {errorMsg}
+                        </div>
+                    )}
                     <div className="grid grid-cols-1 gap-2">
                         <Button variant="outline" onClick={handleGithubLogin} disabled={isLoading}>
                             {isLoading ? (
