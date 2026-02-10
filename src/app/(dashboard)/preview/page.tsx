@@ -1,14 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Smartphone, Tablet, Monitor, ExternalLink, Share2, ArrowRight } from 'lucide-react';
+import { Smartphone, Tablet, Monitor, ExternalLink, Share2, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 export default function PreviewPage() {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [copied, setCopied] = useState(false);
   const portfolioUrl = '/portfolio/demo-user'; // In a real app, this would be the actual user's portfolio URL
+
+  const handleShare = () => {
+    const fullUrl = window.location.origin + portfolioUrl;
+    navigator.clipboard.writeText(fullUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-100 dark:bg-slate-950 -m-8">
@@ -58,11 +66,14 @@ export default function PreviewPage() {
               Customize
             </Button>
           </Link>
-          <Link href="/share">
-            <Button variant="outline" size="sm" leftIcon={<Share2 className="h-4 w-4" />}>
-              Share
-            </Button>
-          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+            onClick={handleShare}
+          >
+            {copied ? 'Copied!' : 'Share'}
+          </Button>
           <Button size="sm" variant="primary" leftIcon={<ArrowRight className="h-4 w-4" />}>
             Publish Live
           </Button>
