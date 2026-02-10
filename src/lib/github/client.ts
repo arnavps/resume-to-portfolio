@@ -1,5 +1,6 @@
 import { Octokit } from '@octokit/rest'
-import { supabase } from '@/lib/supabase/client'
+import { supabase as typedSupabase } from '@/lib/supabase/client'
+const supabase: any = typedSupabase
 
 export class GitHubClient {
   private octokit: Octokit
@@ -21,10 +22,10 @@ export class GitHubClient {
       .single()
 
     if (!data) return null
-    
+
     const now = new Date()
     const expires = new Date(data.expires_at)
-    
+
     if (now > expires) {
       await this.clearCache(key)
       return null
@@ -67,8 +68,8 @@ export class GitHubClient {
     return data
   }
 
-  async fetchRepositories(options: { 
-    limit?: number; 
+  async fetchRepositories(options: {
+    limit?: number;
     minStars?: number;
     excludeForked?: boolean;
   } = {}) {
@@ -139,7 +140,7 @@ export class GitHubClient {
       repo: repo.status === 'fulfilled' ? repo.value.data : null,
       readme: readme.status === 'fulfilled' ? readme.value : null,
       languages: languages.status === 'fulfilled' ? languages.value.data : {},
-      commitCount: commits.status === 'fulfilled' 
+      commitCount: commits.status === 'fulfilled'
         ? parseInt(commits.value.headers.link?.match(/page=(\d+)>; rel="last"/)?.[1] || '1')
         : 0
     }
@@ -265,7 +266,7 @@ export class GitHubClient {
     if (cached) return cached
 
     const repos = await this.fetchRepositories()
-    
+
     const patterns = {
       totalRepos: repos.length,
       totalStars: repos.reduce((sum, r: any) => sum + r.stargazers_count, 0),
@@ -281,7 +282,7 @@ export class GitHubClient {
 
   private aggregateLanguages(repos: any[]) {
     const langMap: Record<string, number> = {}
-    
+
     repos.forEach((repo: any) => {
       if (repo.language) {
         langMap[repo.language] = (langMap[repo.language] || 0) + 1
@@ -295,7 +296,7 @@ export class GitHubClient {
 
   private getMostActiveYear(repos: any[]) {
     const years: Record<string, number> = {}
-    
+
     repos.forEach((repo: any) => {
       const year = new Date(repo.created_at).getFullYear().toString()
       years[year] = (years[year] || 0) + 1

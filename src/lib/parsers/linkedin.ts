@@ -1,4 +1,4 @@
-import pdf from 'pdf-parse';
+const PDFParser = require("pdf2json");
 
 interface LinkedInData {
     experiences: Array<{
@@ -30,20 +30,23 @@ interface LinkedInData {
 }
 
 export async function parseLinkedInPDF(buffer: Buffer): Promise<LinkedInData> {
-    try {
-        const data = await pdf(buffer);
-        const text = data.text;
+    return new Promise((resolve, reject) => {
+        const pdfParser = new PDFParser(this, 1);
 
-        return {
-            experiences: extractLinkedInExperiences(text),
-            education: extractLinkedInEducation(text),
-            certifications: extractLinkedInCertifications(text),
-            skills: extractLinkedInSkills(text)
-        };
-    } catch (error) {
-        console.error('Error parsing LinkedIn PDF:', error);
-        throw new Error('Failed to parse LinkedIn PDF');
-    }
+        pdfParser.on("pdfParser_dataError", (errData: any) => reject(errData.parserError));
+        pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
+            const text = pdfParser.getRawTextContent();
+
+            resolve({
+                experiences: extractLinkedInExperiences(text),
+                education: extractLinkedInEducation(text),
+                certifications: extractLinkedInCertifications(text),
+                skills: extractLinkedInSkills(text)
+            });
+        });
+
+        pdfParser.parseBuffer(buffer);
+    });
 }
 
 function extractLinkedInExperiences(text: string) {

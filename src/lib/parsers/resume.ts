@@ -1,4 +1,4 @@
-const pdf = require('pdf-parse');
+const PDFParser = require("pdf2json");
 
 interface ResumeData {
     experiences: Array<{
@@ -38,22 +38,25 @@ interface ResumeData {
 }
 
 export async function parseResumePDF(buffer: Buffer): Promise<ResumeData> {
-    try {
-        const data = await pdf(buffer);
-        const text = data.text;
+    return new Promise((resolve, reject) => {
+        const pdfParser = new PDFParser(this, 1); // 1 = text only
 
-        return {
-            experiences: extractExperiences(text),
-            education: extractEducation(text),
-            skills: extractSkills(text),
-            projects: extractProjects(text),
-            certifications: extractCertifications(text),
-            contact: extractContact(text)
-        };
-    } catch (error) {
-        console.error('Error parsing resume PDF:', error);
-        throw new Error('Failed to parse resume PDF');
-    }
+        pdfParser.on("pdfParser_dataError", (errData: any) => console.error(errData.parserError));
+        pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
+            const text = pdfParser.getRawTextContent();
+
+            resolve({
+                experiences: extractExperiences(text),
+                education: extractEducation(text),
+                skills: extractSkills(text),
+                projects: extractProjects(text),
+                certifications: extractCertifications(text),
+                contact: extractContact(text)
+            });
+        });
+
+        pdfParser.parseBuffer(buffer);
+    });
 }
 
 function extractExperiences(text: string) {
