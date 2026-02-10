@@ -1,6 +1,5 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,10 +10,21 @@ import Link from 'next/link';
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+
+    useEffect(() => {
+        const message = searchParams.get('message');
+        const error = searchParams.get('error');
+        if (message) {
+            setErrorMsg(message);
+        } else if (error) {
+            setErrorMsg('Authentication failed. Please try again.');
+        }
+    }, [searchParams]);
 
     const handleEmailSubmmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,7 +51,7 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
-
+    // ... rest of the file (handleGithubLogin and return)
     const handleGithubLogin = async () => {
         setIsLoading(true);
         setErrorMsg('');

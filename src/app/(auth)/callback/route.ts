@@ -6,10 +6,18 @@ export async function GET(request: Request) {
     const code = searchParams.get('code');
     const next = searchParams.get('next') ?? '/customize';
 
+    // Check for errors returned by Supabase
+    const error = searchParams.get('error');
+    const error_description = searchParams.get('error_description');
+
+    if (error) {
+        return NextResponse.redirect(`${origin}/login?error=${error}&message=${error_description}`);
+    }
+
     if (code) {
         const supabase = await createClient();
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
+        const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+        if (!sessionError) {
             return NextResponse.redirect(`${origin}${next}`);
         }
     }
