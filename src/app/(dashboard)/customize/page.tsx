@@ -298,16 +298,24 @@ export default function CustomizePage() {
                 </div>
 
                 {/* Preview Viewport */}
-                <div className="flex-1 overflow-auto flex items-center justify-center p-8 bg-dot-pattern">
+                <div className="flex-1 overflow-hidden flex items-start justify-center p-8 bg-dot-pattern relative">
                     <div
-                        className={`bg-white shadow-2xl transition-all duration-500 ease-in-out border border-slate-200 overflow-hidden ${deviceView === 'desktop' ? 'w-full h-full max-w-[1200px] rounded-lg' :
-                            deviceView === 'tablet' ? 'w-[768px] h-[1024px] rounded-2xl border-8 border-slate-800' :
-                                'w-[375px] h-[812px] rounded-3xl border-8 border-slate-800'
-                            }`}
+                        className="transition-transform duration-300 ease-in-out origin-top"
+                        style={{
+                            transform: `scale(${deviceView === 'tablet' ? 0.6 : deviceView === 'mobile' ? 0.8 : 1})`,
+                            marginTop: deviceView !== 'desktop' ? '20px' : '0'
+                        }}
                     >
-                        {/* Render Selected Template */}
-                        <div className="w-full h-full overflow-y-auto custom-scrollbar">
-                            {renderTemplate()}
+                        <div
+                            className={`bg-white shadow-2xl transition-all duration-500 ease-in-out border border-slate-200 overflow-hidden ${deviceView === 'desktop' ? 'w-full h-full max-w-[1200px] rounded-lg' :
+                                deviceView === 'tablet' ? 'w-[768px] h-[1024px] rounded-2xl border-8 border-slate-800' :
+                                    'w-[375px] h-[812px] rounded-3xl border-8 border-slate-800'
+                                }`}
+                        >
+                            {/* Render Selected Template */}
+                            <div className="w-full h-full overflow-y-auto custom-scrollbar">
+                                {renderTemplate()}
+                            </div>
                         </div>
                     </div>
                 </div>
