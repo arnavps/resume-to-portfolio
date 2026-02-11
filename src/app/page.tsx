@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sparkles, Github, FileText, Palette, BarChart3, Zap, Shield, ArrowRight, Check, Star } from 'lucide-react';
+import { Sparkles, Github, FileText, Palette, BarChart3, Zap, Shield, ArrowRight, Check, Star, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { templates } from '@/lib/data/templates';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { TemplatePreview } from '@/components/landing/TemplatePreview';
 
 export default function HomePage() {
     const fadeInUp = {
@@ -37,6 +39,8 @@ export default function HomePage() {
                             <Image src="/logo.png" alt="Folio.ai" width={40} height={40} className="h-10 w-auto" />
                             <span className="font-bold text-xl tracking-tight text-slate-900">Folio.ai</span>
                         </div>
+
+                        {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-6">
                             <Link href="#features" className="text-slate-600 hover:text-indigo-600 transition font-medium">
                                 Features
@@ -48,8 +52,10 @@ export default function HomePage() {
                                 Pricing
                             </Link>
                         </div>
+
                         <div className="flex items-center gap-3">
-                            <Link href="/dashboard">
+                            {/* Dashboard link hidden on mobile */}
+                            <Link href="/dashboard" className="hidden md:block">
                                 <Button variant="ghost" size="md">Dashboard</Button>
                             </Link>
                             <Link href="/dashboard">
@@ -57,6 +63,48 @@ export default function HomePage() {
                                     Get Started Free
                                 </Button>
                             </Link>
+
+                            {/* Mobile Menu Trigger */}
+                            <div className="md:hidden">
+                                <Sheet>
+                                    <SheetTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                            <Menu className="h-6 w-6 text-slate-700" />
+                                        </Button>
+                                    </SheetTrigger>
+                                    <SheetContent side="right">
+                                        <SheetHeader className="text-left">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Image src="/logo.png" alt="Folio.ai" width={32} height={32} className="h-8 w-auto" />
+                                                <SheetTitle>Folio.ai</SheetTitle>
+                                            </div>
+                                            <SheetDescription>
+                                                Navigation Menu
+                                            </SheetDescription>
+                                        </SheetHeader>
+                                        <div className="flex flex-col gap-4 mt-8">
+                                            <Link href="#features" className="text-lg font-medium text-slate-600 hover:text-indigo-600 transition">
+                                                Features
+                                            </Link>
+                                            <Link href="#templates" className="text-lg font-medium text-slate-600 hover:text-indigo-600 transition">
+                                                Templates
+                                            </Link>
+                                            <Link href="#pricing" className="text-lg font-medium text-slate-600 hover:text-indigo-600 transition">
+                                                Pricing
+                                            </Link>
+                                            <div className="h-px bg-slate-100 my-2" />
+                                            <Link href="/dashboard" className="text-lg font-medium text-slate-600 hover:text-indigo-600 transition">
+                                                Dashboard
+                                            </Link>
+                                            <Link href="/dashboard">
+                                                <Button variant="primary" className="w-full justify-center">
+                                                    Get Started Free
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
+                            </div>
                         </div>
                     </nav>
                 </div>
@@ -293,12 +341,8 @@ export default function HomePage() {
                             <motion.div variants={fadeInUp} key={template.id}>
                                 <Card interactive className="overflow-hidden group h-full border-slate-200 hover:shadow-lg transition-all">
                                     <div className="aspect-[4/3] bg-gradient-to-br from-indigo-50 to-purple-50 relative overflow-hidden">
-                                        {/* Placeholder for template image - using icon for now */}
-                                        <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                            <Badge variant="secondary" className="scale-150 opacity-50">
-                                                {template.category}
-                                            </Badge>
-                                        </div>
+                                        {/* Template Preview Wireframe */}
+                                        <TemplatePreview category={template.category} />
 
                                         <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
                                             <Link href="/dashboard">
