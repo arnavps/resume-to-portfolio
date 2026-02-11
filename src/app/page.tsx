@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { templates } from '@/lib/data/templates';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { TemplatePreview } from '@/components/landing/TemplatePreview';
+import { FeatureVisualization } from '@/components/landing/FeatureVisualization';
 
 export default function HomePage() {
     const fadeInUp = {
@@ -237,7 +238,9 @@ export default function HomePage() {
                                 "Professional career summaries tailored to your experience",
                                 "Optimized keywords for better discoverability"
                             ]}
+
                             imageAlt="AI Generation"
+                            type="ai"
                             reverse={false}
                         />
                         <FeatureRow
@@ -248,7 +251,9 @@ export default function HomePage() {
                                 "Code quality insights and best practices detection",
                                 "Automatic updates when you push new code"
                             ]}
+
                             imageAlt="GitHub Integration"
+                            type="github"
                             reverse={true}
                         />
                         <FeatureRow
@@ -259,7 +264,9 @@ export default function HomePage() {
                                 "Keyword optimization for your target roles",
                                 "Format that recruiters and hiring managers love"
                             ]}
+
                             imageAlt="ATS Optimization"
+                            type="ats"
                             reverse={false}
                         />
                     </div>
@@ -529,7 +536,7 @@ function FeatureCard({ number, icon, title, description, gradient }: any) {
     );
 }
 
-function FeatureRow({ title, description, benefits, imageAlt, reverse }: any) {
+function FeatureRow({ title, description, benefits, imageAlt, reverse, type }: any) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -551,8 +558,9 @@ function FeatureRow({ title, description, benefits, imageAlt, reverse }: any) {
                 </ul>
             </div>
             <div className="flex-1">
-                <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl shadow-xl flex items-center justify-center">
-                    <span className="text-slate-400 font-semibold">{imageAlt}</span>
+                <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl shadow-xl flex items-center justify-center relative overflow-hidden">
+                    {/* Feature Visualization */}
+                    <FeatureVisualization type={type} />
                 </div>
             </div>
         </motion.div>
