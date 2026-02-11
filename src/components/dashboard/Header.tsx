@@ -16,6 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { usePortfolioStore } from '@/lib/store/usePortfolioStore';
+import MobileSidebar from './MobileSidebar';
 
 export default function Header() {
     const [mounted, setMounted] = useState(false);
@@ -52,6 +53,7 @@ export default function Header() {
     return (
         <header className="sticky top-0 z-30 flex h-16 w-full items-center gap-4 border-b border-border bg-white/80 px-6 backdrop-blur-md dark:bg-slate-950/80">
             <div className="flex flex-1 items-center gap-4">
+                <MobileSidebar />
                 <div className="relative w-full max-w-md md:w-96">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
