@@ -51,11 +51,13 @@ export default function DashboardPage() {
             setUser({ ...userData, user_metadata: { full_name: userData.full_name } });
 
             // Fetch Portfolio
-            const { data: portfolio } = await supabase
+            const { data: rawPortfolio } = await supabase
                 .from('portfolios')
                 .select('id')
                 .eq('user_id', (userData as any).id)
                 .single();
+
+            const portfolio = rawPortfolio as any;
 
             if (!portfolio) {
                 setStats({
