@@ -80,9 +80,9 @@ export async function syncGithubRepositories() {
             const existing = rawExisting as any;
 
             if (existing) {
-                await supabase.from('projects').update(projectData as any).eq('id', existing.id);
+                await (supabase.from('projects') as any).update(projectData).eq('id', existing.id);
             } else {
-                await supabase.from('projects').insert(projectData as any);
+                await (supabase.from('projects') as any).insert(projectData);
             }
             count++;
         }
