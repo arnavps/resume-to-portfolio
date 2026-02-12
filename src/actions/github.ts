@@ -28,11 +28,22 @@ export async function syncGithubRepositories() {
 
     // 2. Get Portfolio ID
     let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
-    const portfolio = rawPortfolio as any;
+    let portfolio = rawPortfolio as any;
 
     if (!portfolio) {
-        // Should exist if they are connecting things, but just in case
-        return { error: 'Portfolio not found' };
+        // Create default portfolio if missing
+        const { data: newPortfolio, error: createError } = await supabase.from('portfolios').insert({
+            user_id: userId,
+            subdomain: user.github_username || userId, // Fallback subdomain
+            template_id: 'modern-v1',
+            updated_at: new Date().toISOString()
+        } as any).select().single();
+
+        if (createError) {
+            console.error('Failed to create portfolio during sync:', createError);
+            return { error: 'Failed to create portfolio context' };
+        }
+        portfolio = newPortfolio;
     }
 
     try {
