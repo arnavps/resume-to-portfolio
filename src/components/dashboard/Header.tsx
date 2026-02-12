@@ -24,6 +24,21 @@ export default function Header() {
 
     useEffect(() => {
         setMounted(true);
+        // Fetch real user data
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+                if (data.user) {
+                    usePortfolioStore.setState({
+                        data: {
+                            ...usePortfolioStore.getState().data,
+                            name: data.user.full_name || data.user.email,
+                            email: data.user.email
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Failed to fetch user for header:', err));
     }, []);
 
     const notifications = [
@@ -131,7 +146,7 @@ export default function Header() {
                             <DropdownMenuLabel className="font-normal">
                                 <div className="flex flex-col space-y-1">
                                     <p className="text-sm font-medium leading-none">{data.name}</p>
-                                    <p className="text-xs leading-none text-muted-foreground">arnav@example.com</p>
+                                    <p className="text-xs leading-none text-muted-foreground">{data.email}</p>
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />

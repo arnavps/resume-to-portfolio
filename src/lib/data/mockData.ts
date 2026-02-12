@@ -1,5 +1,6 @@
 export const portfolioData = {
     name: "Alex Dev",
+    email: "alex@example.com",
     title: "Senior Full Stack Developer",
     bio: "Passionate about building scalable web applications and intuitive user experiences. Specialized in React, Node.js, and cloud architecture.",
     location: "San Francisco, CA",

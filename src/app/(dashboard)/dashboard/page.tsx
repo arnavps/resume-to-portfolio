@@ -39,38 +39,62 @@ export default function DashboardPage() {
             // Fetch user from our custom auth API
             const res = await fetch('/api/auth/me');
             const data = await res.json();
-            const user = data.user;
+            const userData = data.user;
 
-            if (!user) {
+            if (!userData) {
                 // Not authenticated, redirect to login
-                // window.location.href = '/login'; // Or handle graciously
-                setUser({ email: 'demo@folio.ai', user_metadata: { full_name: 'Alex Developer' } }); // Keep mock for now as requested
-            } else {
-                // Adapt our user object to match expected shape if needed, or update UI to use user.full_name
-                // The API returns { id, email, full_name, ... }
-                // stats logic below might need user.id
-                setUser({ ...user, user_metadata: { full_name: user.full_name } });
+                window.location.href = '/login';
+                return;
             }
 
-            // Using mock stats if database calls fail (for development reliability)
-            // Real implementation would keep the supabase calls
-            setStats({
-                totalViews: 1248,
-                uniqueVisitors: 856,
-                projectClicks: 342,
-                contactClicks: 56
-            });
+            // Update user state
+            setUser({ ...userData, user_metadata: { full_name: userData.full_name } });
 
-            /* 
-            // Original logic preserved for production:
-            if (!user) return;
-            const { data: portfolio } = await supabase.from('portfolios').select('id').eq('user_id', user.id).single();
-            if (!portfolio) { setLoading(false); return; }
-            const { data: analytics } = await supabase.from('portfolio_analytics').select('event_type, visitor_id').eq('portfolio_id', portfolio.id);
+            // Fetch Portfolio
+            const { data: portfolio } = await supabase
+                .from('portfolios')
+                .select('id')
+                .eq('user_id', (userData as any).id)
+                .single();
+
+            if (!portfolio) {
+                setStats({
+                    totalViews: 0,
+                    uniqueVisitors: 0,
+                    projectClicks: 0,
+                    contactClicks: 0
+                });
+                setLoading(false);
+                return;
+            }
+
+            // Fetch Analytics
+            const { data: analytics } = await supabase
+                .from('portfolio_analytics')
+                .select('event_type, visitor_id')
+                .eq('portfolio_id', portfolio.id);
+
+            // Calculate stats
             if (analytics) {
-                // ... calc stats
+                const totalViews = analytics.filter((a: any) => a.event_type === 'view').length;
+                const uniqueVisitors = new Set(analytics.map((a: any) => a.visitor_id)).size;
+                const projectClicks = analytics.filter((a: any) => a.event_type === 'project_click').length;
+                const contactClicks = analytics.filter((a: any) => a.event_type === 'contact_click').length;
+
+                setStats({
+                    totalViews,
+                    uniqueVisitors,
+                    projectClicks,
+                    contactClicks
+                });
+            } else {
+                setStats({
+                    totalViews: 0,
+                    uniqueVisitors: 0,
+                    projectClicks: 0,
+                    contactClicks: 0
+                });
             }
-            */
 
             setLoading(false);
         } catch (error) {
