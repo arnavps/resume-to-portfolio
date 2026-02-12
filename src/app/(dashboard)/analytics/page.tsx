@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     BarChart,
     Bar,
@@ -60,6 +60,28 @@ const dataReferrers = [
 
 export default function AnalyticsPage() {
     const [dateRange, setDateRange] = useState('7d');
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<any>(null);
+
+    useEffect(() => {
+        loadData();
+    }, [dateRange]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const { getAnalyticsData } = await import('@/actions/analytics');
+            const result = await getAnalyticsData(dateRange);
+            setData(result);
+        } catch (error) {
+            console.error('Failed to load analytics', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <div className="p-10 text-center">Loading analytics...</div>;
+    if (!data) return <div className="p-10 text-center">No analytics data available.</div>;
 
     return (
         <div className="space-y-8 animate-fade-in-up">
@@ -76,8 +98,8 @@ export default function AnalyticsPage() {
                             key={range}
                             onClick={() => setDateRange(range)}
                             className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${dateRange === range
-                                    ? 'bg-white text-indigo-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-900'
+                                ? 'bg-white text-indigo-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-900'
                                 }`}
                         >
                             {range}
@@ -90,32 +112,32 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
                     title="Total Visitors"
-                    value="1,248"
-                    trend="+12.5%"
+                    value={data.metrics.uniqueVisitors}
+                    trend="--"
                     trendUp={true}
                     icon={<Users className="h-5 w-5 text-indigo-600" />}
                     color="bg-indigo-50"
                 />
                 <MetricCard
-                    title="Avg. Session"
-                    value="2m 14s"
-                    trend="+5.2%"
+                    title="Page Views"
+                    value={data.metrics.totalViews}
+                    trend="--"
                     trendUp={true}
-                    icon={<Clock className="h-5 w-5 text-purple-600" />}
+                    icon={<Monitor className="h-5 w-5 text-purple-600" />}
                     color="bg-purple-50"
                 />
                 <MetricCard
                     title="Bounce Rate"
-                    value="42.3%"
-                    trend="-2.1%"
-                    trendUp={true} // Lower bounce rate is good
+                    value={data.metrics.bounceRate + '%'}
+                    trend="--"
+                    trendUp={false} // Lower bounce rate is good
                     icon={<ArrowDownRight className="h-5 w-5 text-emerald-600" />}
                     color="bg-emerald-50"
                 />
                 <MetricCard
                     title="Project Clicks"
-                    value="342"
-                    trend="+18.4%"
+                    value={data.metrics.projectClicks}
+                    trend="--"
                     trendUp={true}
                     icon={<MousePointer className="h-5 w-5 text-amber-600" />}
                     color="bg-amber-50"
@@ -132,7 +154,7 @@ export default function AnalyticsPage() {
                     <CardContent>
                         <div className="h-[350px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={dataVisitorTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                <AreaChart data={data.visitorTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
@@ -168,7 +190,7 @@ export default function AnalyticsPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={dataDevices}
+                                        data={data.deviceBreakdown}
                                         cx="50%"
                                         cy="50%"
                                         innerRadius={60}
@@ -176,7 +198,7 @@ export default function AnalyticsPage() {
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
-                                        {dataDevices.map((entry, index) => (
+                                        {data.deviceBreakdown.map((entry: any, index: any) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
@@ -185,13 +207,13 @@ export default function AnalyticsPage() {
                             {/* Center Text */}
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="text-center">
-                                    <span className="text-2xl font-bold text-slate-900">1.2k</span>
-                                    <p className="text-xs text-slate-500">Total</p>
+                                    <span className="text-2xl font-bold text-slate-900">{data.metrics.totalViews}</span>
+                                    <p className="text-xs text-slate-500">Views</p>
                                 </div>
                             </div>
                         </div>
                         <div className="mt-6 space-y-4">
-                            {dataDevices.map((device) => (
+                            {data.deviceBreakdown.map((device: any) => (
                                 <div key={device.name} className="flex items-center justify-between text-sm">
                                     <div className="flex items-center gap-3">
                                         <div className="h-3 w-3 rounded-full" style={{ backgroundColor: device.color }} />
@@ -215,7 +237,7 @@ export default function AnalyticsPage() {
                     <CardContent>
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart layout="vertical" data={dataReferrers} margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                                <BarChart layout="vertical" data={data.referrerData} margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
                                     <XAxis type="number" hide />
                                     <YAxis type="category" dataKey="name" width={80} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 13 }} />
@@ -238,13 +260,7 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[
-                                { country: 'United States', visitors: 450, percent: 45 },
-                                { country: 'India', visitors: 280, percent: 28 },
-                                { country: 'United Kingdom', visitors: 120, percent: 12 },
-                                { country: 'Germany', visitors: 85, percent: 8.5 },
-                                { country: 'Canada', visitors: 65, percent: 6.5 },
-                            ].map((loc) => (
+                            {data.locationData.map((loc: any) => (
                                 <div key={loc.country} className="space-y-1">
                                     <div className="flex justify-between text-sm">
                                         <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Tag, X, Sparkles, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,21 +22,10 @@ type SkillCategory = 'Frontend' | 'Backend' | 'Tools' | 'Soft Skills';
 export default function SkillsPage() {
     const [activeTab, setActiveTab] = useState<SkillCategory>('Frontend');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-    // Mock data
-    const [skills, setSkills] = useState([
-        { id: 1, name: 'React', category: 'Frontend', level: 'Expert', icon: '⚛️' },
-        { id: 2, name: 'TypeScript', category: 'Frontend', level: 'Advanced', icon: 'TS' },
-        { id: 3, name: 'Tailwind CSS', category: 'Frontend', level: 'Expert', icon: '🎨' },
-        { id: 4, name: 'Next.js', category: 'Frontend', level: 'Advanced', icon: '▲' },
-        { id: 5, name: 'Node.js', category: 'Backend', level: 'Intermediate', icon: '🟢' },
-        { id: 6, name: 'PostgreSQL', category: 'Backend', level: 'Intermediate', icon: '🐘' },
-        { id: 7, name: 'Git', category: 'Tools', level: 'Advanced', icon: '📦' },
-        { id: 8, name: 'Docker', category: 'Tools', level: 'Intermediate', icon: '🐳' },
-    ]);
+    const [loading, setLoading] = useState(true);
+    const [skills, setSkills] = useState<any[]>([]);
 
     const categories: SkillCategory[] = ['Frontend', 'Backend', 'Tools', 'Soft Skills'];
-
     const filteredSkills = skills.filter(s => s.category === activeTab);
 
     const [newSkill, setNewSkill] = useState({
@@ -46,26 +35,52 @@ export default function SkillsPage() {
         icon: '🔹'
     });
 
-    const handleAddSkill = () => {
-        const skill = {
-            id: skills.length + 1,
+    useEffect(() => {
+        loadSkills();
+    }, []);
+
+    const loadSkills = async () => {
+        setLoading(true);
+        try {
+            const { getSkills } = await import('@/actions/user-data');
+            const data = await getSkills();
+            setSkills(data);
+        } catch (error) {
+            console.error('Failed to load skills', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddSkill = async () => {
+        const { createSkill } = await import('@/actions/user-data');
+        const result = await createSkill({
             name: newSkill.name,
             category: newSkill.category,
-            level: newSkill.level,
-            icon: newSkill.icon
-        };
-        setSkills([...skills, skill]);
-        setNewSkill({ name: '', category: activeTab, level: 'Intermediate', icon: '🔹' });
-        setIsDialogOpen(false);
+            level: newSkill.level
+        });
+
+        if (result.success) {
+            await loadSkills();
+            setNewSkill({ name: '', category: activeTab, level: 'Intermediate', icon: '🔹' });
+            setIsDialogOpen(false);
+        } else {
+            alert('Failed to add skill');
+        }
+    };
+
+    const handleDeleteSkill = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this skill?')) return;
+        const { deleteSkill } = await import('@/actions/user-data');
+        const result = await deleteSkill(id);
+        if (result.success) {
+            setSkills(skills.filter(s => s.id !== id));
+        }
     };
 
     const handleAISuggest = () => {
-        const suggestedSkills = [
-            { id: Date.now(), name: 'Redux', category: 'Frontend', level: 'Intermediate', icon: '🔄' },
-            { id: Date.now() + 1, name: 'Stripe API', category: 'Backend', level: 'Advanced', icon: '💳' },
-        ];
-        // @ts-ignore
-        setSkills([...skills, ...suggestedSkills]);
+        // AI suggest logic - for now mocked or could be implemented later
+        alert("AI suggestions coming soon!");
     };
 
     return (
@@ -198,7 +213,7 @@ export default function SkillsPage() {
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing">
                                                 <GripVertical className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteSkill(skill.id)}>
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>

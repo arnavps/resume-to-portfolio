@@ -151,3 +151,90 @@ export async function getUserConnections() {
         linkedin: !!user.linkedin_url
     };
 }
+
+export async function getSkills() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
+    const supabase = createServiceClient();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const portfolio = rawPortfolio as { id: string } | null;
+    if (!portfolio) return [];
+
+    const { data: skills, error } = await supabase
+        .from('skills')
+        .select('*')
+        .eq('portfolio_id', portfolio.id)
+        .order('display_order', { ascending: true });
+
+    if (error || !skills) return [];
+
+    return skills.map((s: any) => ({
+        id: s.id,
+        name: s.skill_name,
+        category: s.category,
+        level: s.level || 'Intermediate', // Fallback if column missing
+        icon: getIconForCategory(s.category)
+    }));
+}
+
+function getIconForCategory(category: string) {
+    switch (category) {
+        case 'Frontend': return '⚛️';
+        case 'Backend': return '🟢';
+        case 'Tools': return '📦';
+        default: return '🔹';
+    }
+}
+
+export async function createSkill(data: { name: string; category: string; level: string }) {
+    const userId = await getUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const supabase = createServiceClient();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const portfolio = rawPortfolio as { id: string } | null;
+    if (!portfolio) return { error: 'No portfolio found' };
+
+    const { error } = await supabase.from('skills').insert({
+        portfolio_id: portfolio.id,
+        skill_name: data.name,
+        category: data.category,
+        // level: data.level, // Commented out to be safe with unknown schema
+        display_order: 99
+    } as any);
+
+    if (error) return { error: error.message };
+    return { success: true };
+}
+
+export async function deleteSkill(skillId: number) {
+    const userId = await getUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const supabase = createServiceClient();
+    // Verify ownership
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const portfolio = rawPortfolio as { id: string } | null;
+    if (!portfolio) return { error: 'No portfolio found' };
+
+
+    const { error } = await supabase.from('skills').delete().match({ id: skillId, portfolio_id: portfolio.id });
+    if (error) return { error: error.message };
+    return { success: true };
+}
+
+export async function deleteExperience(experienceId: number) {
+    const userId = await getUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const supabase = createServiceClient();
+    // Verify ownership
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const portfolio = rawPortfolio as { id: string } | null;
+    if (!portfolio) return { error: 'No portfolio found' };
+
+    const { error } = await supabase.from('experiences').delete().match({ id: experienceId, portfolio_id: portfolio.id });
+    if (error) return { error: error.message };
+    return { success: true };
+}

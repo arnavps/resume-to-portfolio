@@ -73,6 +73,17 @@ export default function ExperiencePage() {
         }
     };
 
+    const handleDeleteExperience = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this experience?')) return;
+        const { deleteExperience } = await import('@/actions/user-data');
+        const result = await deleteExperience(id);
+        if (result.success) {
+            setExperience(experience.filter(e => e.id !== id));
+        } else {
+            alert('Failed to delete experience');
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -195,7 +206,7 @@ export default function ExperiencePage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem><Pencil className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
-                                        <DropdownMenuItem className="text-red-600"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
+                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteExperience(item.id)}><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

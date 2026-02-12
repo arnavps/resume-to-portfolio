@@ -11,12 +11,66 @@ import Image from 'next/image';
 
 export default function SettingsPage() {
     const [mounted, setMounted] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
+    const [portfolio, setPortfolio] = useState<any>(null);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         setMounted(true);
+        loadSettings();
     }, []);
 
-    if (!mounted) {
+    const loadSettings = async () => {
+        try {
+            const { getSettings } = await import('@/actions/settings');
+            const data = await getSettings();
+            if (data) {
+                setUser(data.user);
+                setPortfolio(data.portfolio);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        setSaving(true);
+        try {
+            const { updateProfile } = await import('@/actions/settings');
+            const result = await updateProfile(user);
+            if (result.success) {
+                alert('Profile updated successfully!');
+            } else {
+                alert('Failed to update profile: ' + result.error);
+            }
+        } catch (error) {
+            alert('An error occurred');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSavePortfolio = async () => {
+        setSaving(true);
+        try {
+            const { updatePortfolioSettings } = await import('@/actions/settings');
+            const result = await updatePortfolioSettings(portfolio);
+            if (result.success) {
+                alert('Portfolio settings updated successfully!');
+            } else {
+                alert('Failed to update portfolio: ' + result.error);
+            }
+        } catch (error) {
+            alert('An error occurred');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (!mounted || loading) {
         return (
             <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
                 <div className="h-8 w-48 bg-slate-200 rounded"></div>
@@ -54,12 +108,12 @@ export default function SettingsPage() {
                             <div className="flex items-center gap-6">
                                 <div className="relative h-24 w-24 rounded-full bg-slate-100 overflow-hidden border-2 border-white shadow-md">
                                     <div className="flex items-center justify-center h-full w-full text-2xl font-bold text-slate-400">
-                                        JS
+                                        {user?.fullName?.charAt(0) || user?.email?.charAt(0)}
                                     </div>
-                                    {/* <Image src="/placeholder-avatar.jpg" alt="Avatar" width={96} height={96} /> */}
                                 </div>
                                 <div>
-                                    <Button variant="outline" size="sm" leftIcon={<Upload className="h-4 w-4" />}>
+                                    <Button variant="outline" size="sm" onClick={() => alert('Avatar upload not implemented yet')}>
+                                        <Upload className="h-4 w-4 mr-2" />
                                         Change Avatar
                                     </Button>
                                     <p className="text-xs text-slate-500 mt-2">
@@ -71,11 +125,17 @@ export default function SettingsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Full Name</label>
-                                    <Input defaultValue="Alex Developer" />
+                                    <Input
+                                        value={user?.fullName || ''}
+                                        onChange={(e) => setUser({ ...user, fullName: e.target.value })}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Job Title</label>
-                                    <Input defaultValue="Senior Frontend Engineer" />
+                                    <Input
+                                        value={user?.jobTitle || ''}
+                                        onChange={(e) => setUser({ ...user, jobTitle: e.target.value })}
+                                    />
                                 </div>
                             </div>
 
@@ -83,7 +143,8 @@ export default function SettingsPage() {
                                 <label className="text-sm font-medium text-slate-900">Bio</label>
                                 <textarea
                                     className="flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    defaultValue="Passionate about building accessible, pixel-perfect user interfaces that blend art with code."
+                                    value={user?.bio || ''}
+                                    onChange={(e) => setUser({ ...user, bio: e.target.value })}
                                 />
                             </div>
 
@@ -92,26 +153,30 @@ export default function SettingsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center gap-2">
                                         <Github className="h-5 w-5 text-slate-500" />
-                                        <Input placeholder="GitHub URL" defaultValue="github.com/alexdev" />
+                                        <Input
+                                            placeholder="GitHub Username"
+                                            value={user?.socials?.github || ''}
+                                            onChange={(e) => setUser({ ...user, socials: { ...user.socials, github: e.target.value } })}
+                                        />
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Linkedin className="h-5 w-5 text-blue-600" />
-                                        <Input placeholder="LinkedIn URL" defaultValue="linkedin.com/in/alexdev" />
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Twitter className="h-5 w-5 text-sky-500" />
-                                        <Input placeholder="Twitter URL" />
+                                        <Input
+                                            placeholder="LinkedIn URL"
+                                            value={user?.socials?.linkedin || ''}
+                                            onChange={(e) => setUser({ ...user, socials: { ...user.socials, linkedin: e.target.value } })}
+                                        />
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Mail className="h-5 w-5 text-slate-500" />
-                                        <Input placeholder="Email Address" defaultValue="alex@example.com" />
+                                        <Input value={user?.email || ''} disabled />
                                     </div>
                                 </div>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-4 flex justify-end">
-                            <Button variant="primary" leftIcon={<Save className="h-4 w-4" />}>
-                                Save Profile
+                            <Button variant="primary" onClick={handleSaveProfile} disabled={saving}>
+                                {saving ? 'Saving...' : 'Save Profile'}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -131,20 +196,28 @@ export default function SettingsPage() {
                                     <span className="bg-slate-100 border border-slate-200 text-slate-500 px-3 py-2 rounded-l-md text-sm border-r-0">
                                         folio.ai/
                                     </span>
-                                    <Input className="rounded-l-none" defaultValue="alexdev" />
+                                    <Input
+                                        className="rounded-l-none"
+                                        value={portfolio?.subdomain || ''}
+                                        onChange={(e) => setPortfolio({ ...portfolio, subdomain: e.target.value })}
+                                    />
                                 </div>
                                 <p className="text-xs text-slate-500">
-                                    Your portfolio is live at <a href="#" className="text-indigo-600 hover:underline">folio.ai/alexdev</a>
+                                    Your portfolio is live at <a href={`https://folio.ai/${portfolio?.subdomain}`} className="text-indigo-600 hover:underline">folio.ai/{portfolio?.subdomain}</a>
                                 </p>
                             </div>
 
                             <div className="pt-4 border-t border-slate-100">
                                 <div className="flex items-center justify-between mb-4">
                                     <h4 className="text-sm font-semibold text-slate-900">Custom Domain</h4>
-                                    <Badge variant="accent" className="bg-amber-100 text-amber-700 hover:bg-amber-100">PRO Feature</Badge>
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">PRO Feature</Badge>
                                 </div>
-                                <div className="flex gap-2 opacity-60 pointer-events-none">
-                                    <Input placeholder="www.yourdomain.com" />
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="www.yourdomain.com"
+                                        value={portfolio?.customDomain || ''}
+                                        onChange={(e) => setPortfolio({ ...portfolio, customDomain: e.target.value })}
+                                    />
                                     <Button variant="secondary">Verify</Button>
                                 </div>
                             </div>
@@ -153,17 +226,23 @@ export default function SettingsPage() {
                                 <h4 className="text-sm font-semibold text-slate-900">SEO Settings</h4>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Meta Title</label>
-                                    <Input defaultValue="Alex Developer | Full Stack Engineer" />
+                                    <Input
+                                        value={portfolio?.seoTitle || ''}
+                                        onChange={(e) => setPortfolio({ ...portfolio, seoTitle: e.target.value })}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Meta Description</label>
-                                    <Input defaultValue="Portfolio of Alex Developer, a Full Stack Engineer specializing in React and Node.js." />
+                                    <Input
+                                        value={portfolio?.seoDescription || ''}
+                                        onChange={(e) => setPortfolio({ ...portfolio, seoDescription: e.target.value })}
+                                    />
                                 </div>
                             </div>
                         </CardContent>
                         <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-4 flex justify-end">
-                            <Button variant="primary" leftIcon={<Save className="h-4 w-4" />}>
-                                Save Settings
+                            <Button variant="primary" onClick={handleSavePortfolio} disabled={saving}>
+                                {saving ? 'Saving...' : 'Save Settings'}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -179,7 +258,7 @@ export default function SettingsPage() {
                         <CardContent className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-900">Email Address</label>
-                                <Input defaultValue="alex@example.com" disabled />
+                                <Input value={user?.email || ''} disabled />
                             </div>
 
                             <div className="space-y-4 pt-4 border-t border-slate-100">
