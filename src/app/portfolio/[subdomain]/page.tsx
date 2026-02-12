@@ -49,6 +49,7 @@ export default async function PortfolioPage({ params }: { params: Promise<{ subd
     // 3. Transform to PortfolioData shape
     const portfolioData: PortfolioData = {
         name: portfolio.users?.full_name || 'Portfolio User',
+        email: portfolio.users?.email || '',
         title: 'Developer', // We might want to store this in database 'seo_title' or 'bio'
         bio: portfolio.seo_description || 'Welcome to my portfolio.', // Using seo_description as bio fallback
         location: 'Earth', // Not currently in DB
