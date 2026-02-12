@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 import { Github, Upload, Linkedin, CheckCircle2, Loader2, ArrowRight, FileText, Globe } from 'lucide-react';
@@ -14,10 +14,21 @@ export default function ConnectPage() {
     const [linkedinUploaded, setLinkedinUploaded] = useState(false);
     const [uploading, setUploading] = useState<string | null>(null);
 
+    useEffect(() => {
+        const checkConnections = async () => {
+            const { getUserConnections } = await import('@/actions/user-data');
+            const connections = await getUserConnections();
+            if (connections) {
+                setGithubConnected(connections.github);
+                setLinkedinUploaded(connections.linkedin);
+            }
+        };
+        checkConnections();
+    }, []);
+
+
     const connectGitHub = () => {
-        const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-        const redirectUri = `${window.location.origin}/api/auth/github`;
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=read:user,repo`;
+        window.location.href = '/api/auth/github';
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'resume' | 'linkedin') => {

@@ -60,7 +60,7 @@ export async function createProject(data: { title: string; description: string; 
         // Create default portfolio if missing
         const { data: newPortfolio, error: createError } = await supabase.from('portfolios').insert({
             user_id: userId,
-            subdomain: (await supabase.from('users').select('email').eq('id', userId).single()).data?.email?.split('@')[0] || userId,
+            subdomain: ((await supabase.from('users').select('email').eq('id', userId).single()).data as any)?.email?.split('@')[0] || userId,
             template_id: 'modern-v1',
             updated_at: new Date().toISOString()
         } as any).select().single();
@@ -134,4 +134,20 @@ export async function createExperience(data: { role: string; company: string; pe
 
     if (error) return { error: error.message };
     return { success: true };
+}
+
+export async function getUserConnections() {
+    const userId = await getUserId();
+    if (!userId) return null;
+
+    const supabase = createServiceClient();
+    const { data: rawUser, error } = await supabase.from('users').select('github_username, linkedin_url').eq('id', userId).single();
+    const user = rawUser as any;
+
+    if (error || !user) return null;
+
+    return {
+        github: !!user.github_username,
+        linkedin: !!user.linkedin_url
+    };
 }
