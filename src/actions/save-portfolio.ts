@@ -1,9 +1,10 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { PortfolioData } from '@/lib/data/mockData';
 import { Database } from '@/lib/types/database.types';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { verifyJWT } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 type PortfolioRow = Database['public']['Tables']['portfolios']['Row'];
 type SkillInsert = Database['public']['Tables']['skills']['Insert'];
@@ -11,14 +12,25 @@ type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 type ExperienceInsert = Database['public']['Tables']['experiences']['Insert'];
 
 export async function savePortfolio(data: PortfolioData, template: string, theme: string, font: string) {
-    const supabase = (await createClient()) as SupabaseClient<Database>;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth-token')?.value;
 
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    if (!token) {
         return { error: 'Not authenticated' };
     }
+
+    const payload = await verifyJWT(token);
+    if (!payload?.sub) {
+        return { error: 'Invalid session' };
+    }
+
+    const userId = payload.sub;
+    const userEmail = payload.email as string;
+
+    const supabase = createServiceClient();
+
+    // Using explicit user object to match previous structure where needed, or just use userId
+    const user = { id: userId, email: userEmail };
 
     try {
         // 1. Upsert Portfolio Metadata

@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Github, Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import { Suspense } from 'react';
@@ -36,40 +35,26 @@ function LoginPageContent() {
         setErrorMsg('');
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
             });
 
-            if (error) {
-                setErrorMsg(error.message);
+            const data = await res.json();
+
+            if (!res.ok) {
+                setErrorMsg(data.error || 'Login failed');
                 return;
             }
 
             // Successfully logged in
-            router.push('/customize');
+            const redirectUrl = searchParams.get('redirect') || '/dashboard';
+            router.push(redirectUrl);
             router.refresh();
         } catch (error) {
             setErrorMsg('Something went wrong');
         } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleGithubLogin = async () => {
-        setIsLoading(true);
-        setErrorMsg('');
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'github',
-                options: {
-                    redirectTo: `${location.origin}/auth/callback`
-                }
-            });
-
-            if (error) throw error;
-        } catch (error: any) {
-            setErrorMsg(error.message);
             setIsLoading(false);
         }
     };
@@ -89,26 +74,6 @@ function LoginPageContent() {
                         {errorMsg}
                     </div>
                 )}
-                <div className="grid grid-cols-1 gap-2">
-                    <Button variant="outline" onClick={handleGithubLogin} disabled={isLoading}>
-                        {isLoading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <Github className="mr-2 h-4 w-4" />
-                        )}
-                        Github
-                    </Button>
-                </div>
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-slate-500 dark:bg-slate-950">
-                            Or continue with
-                        </span>
-                    </div>
-                </div>
                 <form onSubmit={handleEmailSubmmit}>
                     <div className="grid gap-2">
                         <div className="grid gap-1">

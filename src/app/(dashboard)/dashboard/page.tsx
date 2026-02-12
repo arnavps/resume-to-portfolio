@@ -36,14 +36,20 @@ export default function DashboardPage() {
 
     const fetchStats = async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            // Fetch user from our custom auth API
+            const res = await fetch('/api/auth/me');
+            const data = await res.json();
+            const user = data.user;
 
             if (!user) {
-                // Determine user from context or redirect
-                // For now, let's just set a mock user if none found/auth not set up
-                setUser({ email: 'demo@folio.ai', user_metadata: { full_name: 'Alex Developer' } });
+                // Not authenticated, redirect to login
+                // window.location.href = '/login'; // Or handle graciously
+                setUser({ email: 'demo@folio.ai', user_metadata: { full_name: 'Alex Developer' } }); // Keep mock for now as requested
             } else {
-                setUser(user);
+                // Adapt our user object to match expected shape if needed, or update UI to use user.full_name
+                // The API returns { id, email, full_name, ... }
+                // stats logic below might need user.id
+                setUser({ ...user, user_metadata: { full_name: user.full_name } });
             }
 
             // Using mock stats if database calls fail (for development reliability)
