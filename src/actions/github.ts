@@ -32,18 +32,51 @@ export async function syncGithubRepositories() {
 
     if (!portfolio) {
         // Create default portfolio if missing
+        // Verify we have a valid subdomain source
+        let subdomain = user.github_username;
+        if (!subdomain) {
+            // Fallback to part of email or random string
+            const { data: userEmail } = await supabase.from('users').select('email').eq('id', userId).single();
+            if (userEmail && userEmail.email) {
+                subdomain = userEmail.email.split('@')[0];
+            } else {
+                subdomain = `user-${userId.slice(0, 8)}`;
+            }
+        }
+
+        // Sanitize subdomain
+        subdomain = subdomain.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase();
+
         const { data: newPortfolio, error: createError } = await supabase.from('portfolios').insert({
             user_id: userId,
-            subdomain: user.github_username || userId, // Fallback subdomain
+            subdomain: subdomain,
             template_id: 'modern-v1',
             updated_at: new Date().toISOString()
         } as any).select().single();
 
         if (createError) {
             console.error('Failed to create portfolio during sync:', createError);
-            return { error: 'Failed to create portfolio context' };
+            // Check if it's a unique constraint error on subdomain
+            if (createError.code === '23505') { // Unique violation
+                // Try one more time with random suffix
+                const retrySubdomain = `${subdomain}-${Math.floor(Math.random() * 1000)}`;
+                const { data: retryPortfolio, error: retryError } = await supabase.from('portfolios').insert({
+                    user_id: userId,
+                    subdomain: retrySubdomain,
+                    template_id: 'modern-v1',
+                    updated_at: new Date().toISOString()
+                } as any).select().single();
+
+                if (retryError) {
+                    return { error: `Failed to create portfolio context: ${retryError.message}` };
+                }
+                portfolio = retryPortfolio;
+            } else {
+                return { error: `Failed to create portfolio context: ${createError.message}` };
+            }
+        } else {
+            portfolio = newPortfolio;
         }
-        portfolio = newPortfolio;
     }
 
     try {
