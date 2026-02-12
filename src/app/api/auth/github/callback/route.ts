@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
             client_id: GITHUB_CLIENT_ID,
             client_secret: GITHUB_CLIENT_SECRET,
             code,
-            code,
+
             redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/api/auth/github/callback`,
         });
 
