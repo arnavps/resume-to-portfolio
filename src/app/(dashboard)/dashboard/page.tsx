@@ -29,6 +29,7 @@ export default function DashboardPage() {
         contactClicks: 0
     });
     const [user, setUser] = useState<any>(null);
+    const [dashboardData, setDashboardData] = useState<any>(null);
 
     useEffect(() => {
         fetchStats();
@@ -49,6 +50,15 @@ export default function DashboardPage() {
 
             // Update user state
             setUser({ ...userData, user_metadata: { full_name: userData.full_name } });
+
+            // Fetch Overview Data (Health, Activity, Notifications)
+            try {
+                const { getDashboardOverview } = await import('@/actions/dashboard');
+                const overview = await getDashboardOverview();
+                setDashboardData(overview);
+            } catch (err) {
+                console.error('Failed to load dashboard overview', err);
+            }
 
             // Fetch Portfolio
             const { data: rawPortfolio } = await supabase
@@ -188,29 +198,25 @@ export default function DashboardPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="font-medium">Completion Score</span>
-                                        <span className="font-bold text-indigo-600">85%</span>
+                                        <span className="font-bold text-indigo-600">{dashboardData?.health?.score || 0}%</span>
                                     </div>
                                     <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800">
-                                        <div className="h-2 rounded-full bg-gradient-primary w-[85%] animate-pulse-subtle" />
+                                        <div
+                                            className="h-2 rounded-full bg-gradient-primary animate-pulse-subtle"
+                                            style={{ width: `${dashboardData?.health?.score || 0}%` }}
+                                        />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0" />
-                                        <span>Resume parsed successfully</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0" />
-                                        <span>3 GitHub projects synced</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 text-amber-700 text-sm">
-                                        <AlertCircle className="h-4 w-4 shrink-0" />
-                                        <span>Add a custom domain</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm">
-                                        <CheckCircle2 className="h-4 w-4 shrink-0" />
-                                        <span>Contact form active</span>
-                                    </div>
+                                    {dashboardData?.health?.checks.map((check: any, i: number) => (
+                                        <div key={i} className={`flex items-center gap-3 p-3 rounded-lg text-sm ${check.completed ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                            {check.completed ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
+                                            <span>{check.label}</span>
+                                        </div>
+                                    ))}
+                                    {!dashboardData && (
+                                        <div className="text-sm text-slate-400">Loading health data...</div>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>
@@ -249,18 +255,17 @@ export default function DashboardPage() {
                         <CardContent>
                             <div className="space-y-6 relative ml-2">
                                 <div className="absolute left-0 top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-800" />
-                                {[
-                                    { text: "Portfolio updated", time: "2 hours ago", type: "update" },
-                                    { text: "New visitor from US", time: "5 hours ago", type: "visitor" },
-                                    { text: "Project 'E-commerce' synced", time: "1 day ago", type: "sync" },
-                                    { text: "Resume re-parsed", time: "2 days ago", type: "update" },
-                                ].map((item, i) => (
-                                    <div key={i} className="relative pl-6 flex flex-col gap-1">
-                                        <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-white border-2 border-indigo-500 ring-4 ring-white dark:ring-slate-950" />
-                                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.text}</span>
-                                        <span className="text-xs text-slate-500">{item.time}</span>
-                                    </div>
-                                ))}
+                                {dashboardData?.recentActivity?.length > 0 ? (
+                                    dashboardData.recentActivity.map((item: any, i: number) => (
+                                        <div key={i} className="relative pl-6 flex flex-col gap-1">
+                                            <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-white border-2 border-indigo-500 ring-4 ring-white dark:ring-slate-950" />
+                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.text}</span>
+                                            <span className="text-xs text-slate-500">{item.time}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="pl-6 text-sm text-slate-500">No recent activity</div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

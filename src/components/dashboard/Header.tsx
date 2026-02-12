@@ -22,6 +22,8 @@ export default function Header() {
     const [mounted, setMounted] = useState(false);
     const { data } = usePortfolioStore();
 
+    const [notifications, setNotifications] = useState<any[]>([]);
+
     useEffect(() => {
         setMounted(true);
         // Fetch real user data
@@ -39,31 +41,13 @@ export default function Header() {
                 }
             })
             .catch(err => console.error('Failed to fetch user for header:', err));
-    }, []);
 
-    const notifications = [
-        {
-            id: 1,
-            title: "Portfolio Views Spike",
-            description: "Your portfolio got 150+ views today!",
-            time: "2 hours ago",
-            unread: true
-        },
-        {
-            id: 2,
-            title: "AI Analysis Complete",
-            description: "Your latest project has been analyzed.",
-            time: "5 hours ago",
-            unread: true
-        },
-        {
-            id: 3,
-            title: "New Feature Unlocked",
-            description: "Try out the new 'Creative' template.",
-            time: "1 day ago",
-            unread: false
-        }
-    ];
+        // Fetch notifications
+        import('@/actions/dashboard').then(({ getNotifications }) => {
+            getNotifications().then(setNotifications);
+        }).catch(err => console.error('Failed to fetch notifications:', err));
+
+    }, []);
 
     return (
         <header className="sticky top-0 z-30 flex h-16 w-full items-center gap-4 border-b border-border bg-white/80 px-6 backdrop-blur-md dark:bg-slate-950/80">
