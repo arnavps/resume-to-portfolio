@@ -1,0 +1,96 @@
+'use server';
+
+import { createServiceClient } from '@/lib/supabase/service';
+import { verifyJWT } from '@/lib/auth';
+import { cookies } from 'next/headers';
+
+async function getUserId() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth-token')?.value;
+    if (!token) return null;
+    const payload = await verifyJWT(token);
+    return payload?.sub as string | undefined;
+}
+
+export async function syncGithubRepositories() {
+    const userId = await getUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const supabase = createServiceClient();
+
+    // 1. Get User Info (GitHub Username)
+    const { data: rawUser } = await supabase.from('users').select('github_username').eq('id', userId).single();
+    const user = rawUser as any;
+
+    if (!user || !user.github_username) {
+        return { error: 'No GitHub username linked' };
+    }
+
+    // 2. Get Portfolio ID
+    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const portfolio = rawPortfolio as any;
+
+    if (!portfolio) {
+        // Should exist if they are connecting things, but just in case
+        return { error: 'Portfolio not found' };
+    }
+
+    try {
+        // 3. Fetch Repos from GitHub
+        // Use a personal access token if available in env for higher rate limits, otherwise public
+        // Ideally we should use the user's access token if we stored it, but we didn't store it in callbacks.
+        // For public repos, unauthenticated is fine but rate limited.
+        // Since we are running on server, we can use our GITHUB_CLIENT_ID/SECRET for higher limits if we implement app auth, 
+        // but for now let's try simple fetch.
+
+        const res = await fetch(`https://api.github.com/users/${user.github_username}/repos?sort=updated&per_page=10&type=owner`);
+        if (!res.ok) {
+            throw new Error(`GitHub API error: ${res.statusText}`);
+        }
+
+        const repos = await res.json();
+
+        // 4. Upsert Projects
+        let count = 0;
+        for (const repo of repos) {
+            // Skip forks if we want? Maybe keep them for now.
+
+            const projectData = {
+                portfolio_id: portfolio.id,
+                title: repo.name,
+                short_description: repo.description,
+                project_url: repo.html_url,
+                github_url: repo.html_url,
+                technologies: JSON.stringify([repo.language].filter(Boolean)), // Simple extraction
+                source: 'github',
+                source_id: repo.id.toString(),
+                is_visible: true, // Default to visible?
+                updated_at: new Date().toISOString(),
+                display_order: count // Simple ordering
+            };
+
+            // Check if exists by source_id to update or insert
+            const { data: rawExisting } = await supabase
+                .from('projects')
+                .select('id')
+                .eq('portfolio_id', portfolio.id)
+                .eq('source_id', repo.id.toString())
+                .single();
+
+            const existing = rawExisting as any;
+
+            if (existing) {
+                await supabase.from('projects').update(projectData as any).eq('id', existing.id);
+            } else {
+                await supabase.from('projects').insert(projectData as any);
+            }
+            count++;
+        }
+
+        return { success: true, count };
+
+    } catch (error: any) {
+        console.error('Sync GitHub Error:', error);
+        return { error: error.message };
+    }
+}

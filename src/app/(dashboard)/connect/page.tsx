@@ -41,12 +41,23 @@ export default function ConnectPage() {
         formData.append('file', file);
 
         try {
-            // Mock API call for now
-            // const response = await fetch(`/api/upload/${type}`, { method: 'POST', body: formData });
+            const response = await fetch(`/api/upload/${type}`, { method: 'POST', body: formData });
 
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
 
-            if (type === 'resume') setResumeUploaded(true);
+            if (type === 'resume') {
+                setResumeUploaded(true);
+                // Trigger Data Application
+                const { applyResumeData } = await import('@/actions/resume');
+                const result = await applyResumeData();
+                if (result.error) {
+                    console.error('Failed to apply resume data:', result.error);
+                } else {
+                    console.log('Resume data applied:', result.results);
+                }
+            }
             if (type === 'linkedin') setLinkedinUploaded(true);
 
         } catch (error) {
@@ -55,6 +66,18 @@ export default function ConnectPage() {
             setUploading(null);
         }
     };
+
+    // Auto-sync GitHub when connected
+    useEffect(() => {
+        if (githubConnected) {
+            import('@/actions/github').then(({ syncGithubRepositories }) => {
+                syncGithubRepositories().then(res => {
+                    if (res.error) console.error('GitHub sync failed:', res.error);
+                    else console.log('GitHub sync success:', res.count, 'repos');
+                });
+            });
+        }
+    }, [githubConnected]);
 
     const allConnected = githubConnected || resumeUploaded || linkedinUploaded;
 
