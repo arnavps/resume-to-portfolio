@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
             client_id: GITHUB_CLIENT_ID,
             client_secret: GITHUB_CLIENT_SECRET,
             code,
-            redirect_uri: `${req.nextUrl.origin}/api/auth/github/callback`,
+            code,
+            redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/api/auth/github/callback`,
         });
 
         const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
