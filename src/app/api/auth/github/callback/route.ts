@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
         // Check if user exists
         const { data: existingUser } = await supabase.from('users').select('*').eq('email', email).single();
 
-        let userId = existingUser?.id;
+        let userId = (existingUser as any)?.id;
 
         if (!existingUser) {
             // Create new user
