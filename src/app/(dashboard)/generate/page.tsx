@@ -172,7 +172,7 @@ export default function GeneratePage() {
                                     View Live Preview
                                 </Button>
                             </Link>
-                            <Link href="/dashboard/customize">
+                            <Link href="/customize">
                                 <Button size="lg" variant="outline" rightIcon={<ArrowRight className="h-5 w-5" />}>
                                     Customize Design
                                 </Button>

@@ -227,7 +227,7 @@ export default function ConnectPage() {
                         </p>
                     </CardContent>
                     <CardFooter>
-                        <Link href="/dashboard/projects" className="w-full">
+                        <Link href="/projects" className="w-full">
                             <Button variant="ghost" className="w-full" rightIcon={<ArrowRight className="h-4 w-4" />}>
                                 Go to Content Manager
                             </Button>
@@ -251,7 +251,7 @@ export default function ConnectPage() {
                                     You're ready to generate your AI portfolio!
                                 </p>
                             </div>
-                            <Link href="/dashboard/generate">
+                            <Link href="/generate">
                                 <Button size="lg" variant="primary" rightIcon={<ArrowRight className="h-5 w-5" />} className="shadow-lg shadow-indigo-500/25">
                                     Generate Portfolio Now
                                 </Button>
