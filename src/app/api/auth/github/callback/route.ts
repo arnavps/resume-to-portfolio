@@ -84,11 +84,11 @@ export async function GET(req: NextRequest) {
             if (insertError) throw insertError;
         } else {
             // Update basic info
-            await supabase.from('users').update({
+            await (supabase.from('users') as any).update({
                 avatar_url: githubUser.avatar_url,
                 github_username: githubUser.login,
                 updated_at: new Date().toISOString()
-            } as any).eq('id', userId);
+            }).eq('id', userId);
         }
 
         // 5. Generate and Set Cookie
