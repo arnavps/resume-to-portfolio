@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Folder, MoreVertical, Github, Globe, Calendar, X } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,36 +24,26 @@ export default function ProjectsPage() {
     const [search, setSearch] = useState('');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Mock data for now
-    const [projects, setProjects] = useState([
-        {
-            id: 1,
-            title: 'E-commerce Platform',
-            description: 'A full-stack e-commerce solution with Next.js and Stripe.',
-            tags: ['Next.js', 'TypeScript', 'Stripe'],
-            updatedAt: '2 days ago',
-            status: 'Published',
-            image: '/projects/ecommerce.png' // Placeholder
-        },
-        {
-            id: 2,
-            title: 'Task Management App',
-            description: 'Real-time collaboration tool for remote teams.',
-            tags: ['React', 'Firebase', 'Tailwind'],
-            updatedAt: '1 week ago',
-            status: 'Draft',
-            image: '/projects/task.png'
-        },
-        {
-            id: 3,
-            title: 'Fitness Tracker API',
-            description: 'RESTful API for tracking workouts and nutrition.',
-            tags: ['Node.js', 'Express', 'PostgreSQL'],
-            updatedAt: '3 weeks ago',
-            status: 'Published',
-            image: '/projects/api.png'
+    const [loading, setLoading] = useState(true);
+    const [projects, setProjects] = useState<any[]>([]);
+
+    useEffect(() => {
+        loadProjects();
+    }, []);
+
+    const loadProjects = async () => {
+        setLoading(true);
+        try {
+            // Import dynamically to avoid server component issues if client component
+            const { getProjects } = await import('@/actions/user-data');
+            const data = await getProjects();
+            setProjects(data);
+        } catch (error) {
+            console.error('Failed to load projects', error);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
 
     const [newProject, setNewProject] = useState({
         title: '',
@@ -62,19 +52,24 @@ export default function ProjectsPage() {
         status: 'Draft'
     });
 
-    const handleAddProject = () => {
-        const project = {
-            id: projects.length + 1,
+    const handleAddProject = async () => {
+        const { createProject } = await import('@/actions/user-data');
+        const tagsArray = newProject.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+
+        const result = await createProject({
             title: newProject.title,
             description: newProject.description,
-            tags: newProject.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
-            updatedAt: 'Just now',
-            status: newProject.status,
-            image: ''
-        };
-        setProjects([project, ...projects]);
-        setNewProject({ title: '', description: '', tags: '', status: 'Draft' });
-        setIsDialogOpen(false);
+            tags: tagsArray,
+            status: newProject.status
+        });
+
+        if (result.success) {
+            await loadProjects(); // Refresh list
+            setNewProject({ title: '', description: '', tags: '', status: 'Draft' });
+            setIsDialogOpen(false);
+        } else {
+            alert('Failed to create project: ' + (result.error || 'Unknown error'));
+        }
     };
 
     const filteredProjects = projects.filter(p =>
@@ -214,7 +209,7 @@ export default function ProjectsPage() {
                                     {project.description}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                    {project.tags.map(tag => (
+                                    {project.tags.map((tag: string) => (
                                         <Badge key={tag} variant="secondary" className="font-normal">
                                             {tag}
                                         </Badge>

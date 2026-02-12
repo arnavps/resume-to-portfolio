@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Briefcase, Calendar, Building2, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,36 +22,25 @@ import { Textarea } from '@/components/ui/textarea';
 export default function ExperiencePage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Mock data
-    const [experience, setExperience] = useState([
-        {
-            id: 1,
-            role: 'Senior Frontend Developer',
-            company: 'TechCorp Inc.',
-            period: '2022 - Present',
-            type: 'Full-time',
-            description: 'Leading the frontend migration to Next.js and implementing a new design system.',
-            skills: ['React', 'Next.js', 'TypeScript', 'Tailwind']
-        },
-        {
-            id: 2,
-            role: 'Full Stack Engineer',
-            company: 'StartupX',
-            period: '2020 - 2022',
-            type: 'Full-time',
-            description: 'Built scalable APIs and interactive UI for a fintech product.',
-            skills: ['Node.js', 'PostgreSQL', 'Vue.js']
-        },
-        {
-            id: 3,
-            role: 'Web Developer Intern',
-            company: 'Digital Agency',
-            period: '2019 - 2020',
-            type: 'Internship',
-            description: 'Developed responsive websites for various clients using WordPress and React.',
-            skills: ['HTML/CSS', 'JavaScript', 'WordPress']
+    const [loading, setLoading] = useState(true);
+    const [experience, setExperience] = useState<any[]>([]);
+
+    useEffect(() => {
+        loadExperience();
+    }, []);
+
+    const loadExperience = async () => {
+        setLoading(true);
+        try {
+            const { getExperience } = await import('@/actions/user-data');
+            const data = await getExperience();
+            setExperience(data);
+        } catch (error) {
+            console.error('Failed to load experience', error);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
 
     const [newExperience, setNewExperience] = useState({
         role: '',
@@ -62,19 +51,26 @@ export default function ExperiencePage() {
         skills: ''
     });
 
-    const handleAddExperience = () => {
-        const item = {
-            id: experience.length + 1,
+    const handleAddExperience = async () => {
+        const { createExperience } = await import('@/actions/user-data');
+        const skillsArray = newExperience.skills.split(',').map(s => s.trim()).filter(s => s !== '');
+
+        const result = await createExperience({
             role: newExperience.role,
             company: newExperience.company,
             period: newExperience.period,
             type: newExperience.type,
             description: newExperience.description,
-            skills: newExperience.skills.split(',').map(s => s.trim()).filter(s => s !== '')
-        };
-        setExperience([item, ...experience]);
-        setNewExperience({ role: '', company: '', period: '', type: 'Full-time', description: '', skills: '' });
-        setIsDialogOpen(false);
+            skills: skillsArray
+        });
+
+        if (result.success) {
+            await loadExperience();
+            setNewExperience({ role: '', company: '', period: '', type: 'Full-time', description: '', skills: '' });
+            setIsDialogOpen(false);
+        } else {
+            alert('Failed to save experience: ' + (result.error || 'Unknown error'));
+        }
     };
 
     return (
@@ -213,7 +209,7 @@ export default function ExperiencePage() {
                                 {item.description}
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                {item.skills.map(skill => (
+                                {item.skills && item.skills.map((skill: string) => (
                                     <Badge key={skill} variant="neutral" className="bg-slate-50 text-slate-600 border-slate-200">
                                         {skill}
                                     </Badge>
