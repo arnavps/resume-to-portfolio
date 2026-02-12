@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
     const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
-    const origin = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+    const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.RENDER_EXTERNAL_URL || 'https://resume-to-portfolio-7zdz.onrender.com';
     const REDIRECT_URI = `${origin}/api/auth/github/callback`;
 
     if (!GITHUB_CLIENT_ID) {
