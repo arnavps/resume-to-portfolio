@@ -74,7 +74,7 @@ export async function syncGithubRepositories() {
                 }
                 portfolio = retryPortfolio;
             } else {
-                return { error: `Failed to create portfolio context: ${createError.message}` };
+                return { error: `Failed to create portfolio context: ${createError.message} (Code: ${createError.code})` };
             }
         } else {
             portfolio = newPortfolio;
