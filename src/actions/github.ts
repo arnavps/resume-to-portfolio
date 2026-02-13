@@ -36,7 +36,9 @@ export async function syncGithubRepositories() {
         let subdomain = user.github_username;
         if (!subdomain) {
             // Fallback to part of email or random string
-            const { data: userEmail } = await supabase.from('users').select('email').eq('id', userId).single();
+            const { data: rawUserEmail } = await supabase.from('users').select('email').eq('id', userId).single();
+            const userEmail = rawUserEmail as any;
+
             if (userEmail && userEmail.email) {
                 subdomain = userEmail.email.split('@')[0];
             } else {
