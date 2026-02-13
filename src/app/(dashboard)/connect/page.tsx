@@ -31,11 +31,14 @@ export default function ConnectPage() {
         window.location.href = '/api/auth/github';
     };
 
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'resume' | 'linkedin') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setUploading(type);
+        setErrorMsg(null);
 
         const formData = new FormData();
         formData.append('file', file);
@@ -44,7 +47,9 @@ export default function ConnectPage() {
             const response = await fetch(`/api/upload/${type}`, { method: 'POST', body: formData });
 
             if (!response.ok) {
-                throw new Error('Upload failed');
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Server error details:', errorData);
+                throw new Error(errorData.details || errorData.error || `Upload failed with status ${response.status}`);
             }
 
             if (type === 'resume') {
@@ -54,14 +59,16 @@ export default function ConnectPage() {
                 const result = await applyResumeData();
                 if (result.error) {
                     console.error('Failed to apply resume data:', result.error);
+                    setErrorMsg(`Upload success but failed to apply data: ${result.error}`);
                 } else {
                     console.log('Resume data applied:', result.results);
                 }
             }
             if (type === 'linkedin') setLinkedinUploaded(true);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Error uploading ${type}:`, error);
+            setErrorMsg(error.message || 'Upload failed');
         } finally {
             setUploading(null);
         }
@@ -174,6 +181,11 @@ export default function ConnectPage() {
                                 >
                                     Upload PDF
                                 </Button>
+                                {errorMsg && (
+                                    <p className="text-xs text-red-500 mt-2 text-center break-words">
+                                        {errorMsg}
+                                    </p>
+                                )}
                             </div>
                         )}
                     </CardFooter>

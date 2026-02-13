@@ -89,7 +89,17 @@ export async function syncGithubRepositories() {
         // Since we are running on server, we can use our GITHUB_CLIENT_ID/SECRET for higher limits if we implement app auth, 
         // but for now let's try simple fetch.
 
-        const res = await fetch(`https://api.github.com/users/${user.github_username}/repos?sort=updated&per_page=10&type=owner`);
+        const token = process.env.GITHUB_ACCESS_TOKEN;
+        const headers: any = {
+            'Accept': 'application/vnd.github.v3+json'
+        };
+        if (token) {
+            headers['Authorization'] = `token ${token}`;
+        }
+
+        const res = await fetch(`https://api.github.com/users/${user.github_username}/repos?sort=updated&per_page=10&type=owner`, {
+            headers
+        });
         if (!res.ok) {
             throw new Error(`GitHub API error: ${res.statusText}`);
         }
