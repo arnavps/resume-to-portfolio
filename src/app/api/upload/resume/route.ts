@@ -73,9 +73,13 @@ export async function POST(request: NextRequest) {
             message: 'Resume uploaded and parsed successfully'
         });
     } catch (error: any) {
-        console.error('Error uploading resume:', error);
+        console.error('CRITICAL ERROR uploading resume:', error);
+        console.error('Error stack:', error.stack);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+        }
         return NextResponse.json(
-            { error: error.message || 'Failed to upload resume' },
+            { error: error.message || 'Failed to upload resume', details: error.toString() },
             { status: 500 }
         );
     }

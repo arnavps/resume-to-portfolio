@@ -50,12 +50,20 @@ export async function parseResumePDF(buffer: Buffer): Promise<ResumeData> {
 
         pdfParser.on("pdfParser_dataReady", async (pdfData: any) => {
             try {
+                console.log('PDF text extraction started...');
                 const text = pdfParser.getRawTextContent();
+                console.log('PDF text extracted, length:', text.length);
+
+                if (!process.env.GEMINI_API_KEY) {
+                    throw new Error('GEMINI_API_KEY is missing in server environment');
+                }
+
+                console.log('Starting AI extraction...');
                 const resumeData = await extractResumeWithAI(text);
+                console.log('AI extraction completed successfully');
                 resolve(resumeData);
             } catch (error) {
-                console.error("AI Parsing failed, falling back to manual or returning empty", error);
-                // Fallback can be implemented here if needed, or just reject
+                console.error("AI Parsing failed:", error);
                 reject(error);
             }
         });
