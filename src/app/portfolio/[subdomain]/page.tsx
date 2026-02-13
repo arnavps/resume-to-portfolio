@@ -82,9 +82,11 @@ export default async function PortfolioPage({ params }: { params: Promise<{ subd
     // 4. Render Template
     // 4. Render Template
     const templates = {
-        'modern-v1': ModernTemplate,
-        'creative-studio': CreativeTemplate,
-        'minimal-mono': MinimalTemplate
+        'modern': ModernTemplate,
+        'creative': CreativeTemplate,
+        'minimal': MinimalTemplate,
+        'professional': ModernTemplate, // Fallback or map to new component if exists
+        'startup': CreativeTemplate // Fallback
     };
 
     const templateId = portfolio.template_id as keyof typeof templates;

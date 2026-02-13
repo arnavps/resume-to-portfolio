@@ -61,7 +61,7 @@ export async function createProject(data: { title: string; description: string; 
         const { data: newPortfolio, error: createError } = await supabase.from('portfolios').insert({
             user_id: userId,
             subdomain: ((await supabase.from('users').select('email').eq('id', userId).single()).data as any)?.email?.split('@')[0] || userId,
-            template_id: 'modern-v1',
+            template_id: 'modern',
             updated_at: new Date().toISOString()
         } as any).select().single();
 

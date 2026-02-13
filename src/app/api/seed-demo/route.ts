@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
             .upsert({
                 user_id: user.id,
                 subdomain: 'demo-user',
-                template_id: 'modern-v1',
+                template_id: 'modern',
                 color_scheme: { primary: 'indigo', font: 'sans' },
                 updated_at: new Date().toISOString()
             } as any, { onConflict: 'user_id' })

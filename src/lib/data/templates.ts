@@ -11,7 +11,7 @@ export interface Template {
 
 export const templates: Template[] = [
     {
-        id: 'modern-v1',
+        id: 'modern',
         name: 'Modern Dev',
         description: 'Clean and professional layout focused on code projects and technical skills.',
         category: 'Professional',
@@ -20,7 +20,7 @@ export const templates: Template[] = [
         isPopular: true
     },
     {
-        id: 'minimal-mono',
+        id: 'minimal',
         name: 'Mono Focus',
         description: 'A minimalist, typography-driven theme perfect for content-heavy portfolios.',
         category: 'Minimal',
@@ -28,7 +28,7 @@ export const templates: Template[] = [
         isPremium: false,
     },
     {
-        id: 'creative-studio',
+        id: 'creative',
         name: 'Artisan',
         description: 'Bold colors and large imagery for designers and creative developers.',
         category: 'Creative',
@@ -37,7 +37,7 @@ export const templates: Template[] = [
         isNew: true
     },
     {
-        id: 'timeline-pro',
+        id: 'professional',
         name: 'Career Path',
         description: 'Timeline-based layout highlighting experience and career progression.',
         category: 'Professional',
@@ -45,7 +45,7 @@ export const templates: Template[] = [
         isPremium: true,
     },
     {
-        id: 'grid-folio',
+        id: 'startup',
         name: 'Grid Master',
         description: 'Masonry grid layout for showcasing a large volume of visual work.',
         category: 'Creative',
@@ -53,7 +53,7 @@ export const templates: Template[] = [
         isPremium: false,
     },
     {
-        id: 'simple-cv',
+        id: 'simple',
         name: 'Digital CV',
         description: 'Single-page resume style for a quick and direct professional overview.',
         category: 'Minimal',

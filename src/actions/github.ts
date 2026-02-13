@@ -52,7 +52,7 @@ export async function syncGithubRepositories() {
         const { data: newPortfolio, error: createError } = await supabase.from('portfolios').insert({
             user_id: userId,
             subdomain: subdomain,
-            template_id: 'modern-v1',
+            template_id: 'modern',
             updated_at: new Date().toISOString()
         } as any).select().single();
 
@@ -65,7 +65,7 @@ export async function syncGithubRepositories() {
                 const { data: retryPortfolio, error: retryError } = await supabase.from('portfolios').insert({
                     user_id: userId,
                     subdomain: retrySubdomain,
-                    template_id: 'modern-v1',
+                    template_id: 'modern',
                     updated_at: new Date().toISOString()
                 } as any).select().single();
 
