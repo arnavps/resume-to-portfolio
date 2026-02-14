@@ -128,7 +128,7 @@ export async function applyResumeData() {
                     portfolio_id: portfolioId,
                     title: proj.title,
                     short_description: proj.description,
-                    technologies: JSON.stringify(proj.technologies || []),
+                    technologies: proj.technologies || [],
                     source: 'resume',
                     is_visible: true,
                     updated_at: new Date().toISOString()

@@ -323,4 +323,12 @@ INSERT INTO public.templates (name, display_name, description, category, is_prem
 ('professional', 'Professional', 'Corporate-friendly design with subtle styling', 'professional', false, true, '{"primaryColor": "#1F2937", "secondaryColor": "#3B82F6", "fontFamily": "Georgia", "layout": "single-page"}'),
 ('startup', 'Startup', 'Modern startup aesthetic with bold colors', 'startup', true, true, '{"primaryColor": "#F59E0B", "secondaryColor": "#EF4444", "fontFamily": "Space Mono", "layout": "multi-page"}')
 ON CONFLICT (name) DO NOTHING;
+
+-- Storage Bucket Setup for Avatars (Run separately if needed)
+INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO NOTHING;
+
+-- Policies for Avatars Bucket
+CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "Authenticated users can upload avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can update their own avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid() = owner);
 ```

@@ -217,12 +217,28 @@ export default function ProjectsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter className="p-5 pt-0 mt-4 flex gap-2">
-                                <Button variant="outline" size="sm" className="flex-1" leftIcon={<Github className="h-3 w-3" />}>
-                                    Code
-                                </Button>
-                                <Button variant="outline" size="sm" className="flex-1" leftIcon={<Globe className="h-3 w-3" />}>
-                                    Demo
-                                </Button>
+                                {project.repo_url && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1"
+                                        leftIcon={<Github className="h-3 w-3" />}
+                                        onClick={() => window.open(project.repo_url, '_blank')}
+                                    >
+                                        Code
+                                    </Button>
+                                )}
+                                {project.demo_url && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1"
+                                        leftIcon={<Globe className="h-3 w-3" />}
+                                        onClick={() => window.open(project.demo_url, '_blank')}
+                                    >
+                                        Demo
+                                    </Button>
+                                )}
                             </CardFooter>
                         </Card>
                     ))}

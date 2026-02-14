@@ -114,13 +114,14 @@ export async function syncGithubRepositories() {
             const projectData = {
                 portfolio_id: portfolio.id,
                 title: repo.name,
+                slug: repo.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + `-${repo.id}`, // Ensure unique slug with ID
                 short_description: repo.description,
-                project_url: repo.html_url,
-                github_url: repo.html_url,
-                technologies: JSON.stringify([repo.language].filter(Boolean)), // Simple extraction
+                repo_url: repo.html_url, // Correct field name
+                demo_url: repo.homepage || null, // Correct field name
+                technologies: [repo.language].filter(Boolean), // Store as JSON array
                 source: 'github',
                 source_id: repo.id.toString(),
-                is_visible: true, // Default to visible?
+                is_visible: true, // Default to visible
                 updated_at: new Date().toISOString(),
                 display_order: count // Simple ordering
             };
