@@ -109,10 +109,11 @@ export async function applyResumeData() {
                     .single();
 
                 if (!existing) {
+                    console.log(`Adding skill: ${skill}`);
                     await supabase.from('skills').insert({
                         portfolio_id: portfolioId,
                         skill_name: skill,
-                        category: 'Other', // Auto-categorization would be nice here
+                        category: 'Tools', // Changed from 'Other' to 'Tools' so they show up in default templates
                         display_order: 99
                     } as any);
                     results.skills++;

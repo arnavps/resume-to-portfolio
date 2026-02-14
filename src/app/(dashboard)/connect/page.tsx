@@ -61,7 +61,7 @@ export default function ConnectPage() {
                     console.error('Failed to apply resume data:', result.error);
                     setErrorMsg(`Upload success but failed to apply data: ${result.error}`);
                 } else {
-                    console.log('Resume data applied:', result.results);
+                    console.log('Resume data applied successfully:', result.results);
                 }
             }
             if (type === 'linkedin') setLinkedinUploaded(true);

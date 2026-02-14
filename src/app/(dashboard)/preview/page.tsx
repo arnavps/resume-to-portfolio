@@ -10,19 +10,32 @@ import { getUserSubdomain } from '@/actions/user';
 export default function PreviewPage() {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [copied, setCopied] = useState(false);
-  const [portfolioUrl, setPortfolioUrl] = useState('/portfolio/demo-user');
+  const [loading, setLoading] = useState(true);
+  const [portfolioUrl, setPortfolioUrl] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSubdomain() {
-      const subdomain = await getUserSubdomain();
-      if (subdomain) {
-        setPortfolioUrl(`/portfolio/${subdomain}`);
+      try {
+        const subdomain = await getUserSubdomain();
+        if (subdomain) {
+          setPortfolioUrl(`/portfolio/${subdomain}`);
+        } else {
+          // If no subdomain found (e.g. no portfolio created yet), 
+          // we could redirect to generate or show a specific "not found" state.
+          // For now, keep it null so we can show a valid empty state.
+          setPortfolioUrl(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subdomain:", error);
+      } finally {
+        setLoading(false);
       }
     }
     fetchSubdomain();
   }, []);
 
   const handleShare = () => {
+    if (!portfolioUrl) return;
     const fullUrl = window.location.origin + portfolioUrl;
     navigator.clipboard.writeText(fullUrl);
     setCopied(true);
@@ -68,7 +81,8 @@ export default function PreviewPage() {
             variant="ghost"
             size="sm"
             leftIcon={<ExternalLink className="h-4 w-4" />}
-            onClick={() => window.open(portfolioUrl, '_blank')}
+            onClick={() => portfolioUrl && window.open(portfolioUrl, '_blank')}
+            disabled={!portfolioUrl}
           >
             Full Screen
           </Button>
@@ -82,6 +96,7 @@ export default function PreviewPage() {
             size="sm"
             leftIcon={copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
             onClick={handleShare}
+            disabled={!portfolioUrl}
           >
             {copied ? 'Copied!' : 'Share'}
           </Button>
@@ -115,11 +130,37 @@ export default function PreviewPage() {
                   "w-full h-full rounded-lg"
             )}
           >
-            <iframe
-              src={portfolioUrl}
-              className="w-full h-full bg-white"
-              title="Portfolio Preview"
-            />
+            {loading ? (
+              <div className="w-full h-full flex items-center justify-center bg-white">
+                <div className="space-y-4 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                  <p className="text-slate-500">Loading your portfolio...</p>
+                </div>
+              </div>
+            ) : portfolioUrl ? (
+              <iframe
+                src={portfolioUrl}
+                className="w-full h-full bg-white"
+                title="Portfolio Preview"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-white p-8 text-center">
+                <div className="max-w-md space-y-6">
+                  <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto">
+                    <Monitor className="h-10 w-10 text-indigo-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">No Portfolio Generated Yet</h3>
+                    <p className="text-slate-500 mt-2">
+                      Connect your data sources and click "Generate Portfolio" to create your personal website.
+                    </p>
+                  </div>
+                  <Link href="/generate">
+                    <Button variant="primary">Go to Generator</Button>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

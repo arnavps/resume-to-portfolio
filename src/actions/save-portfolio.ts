@@ -42,11 +42,34 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
             updated_at: new Date().toISOString()
         };
 
-        const { data: rawPortfolio, error: portfolioError } = await supabase
+        // Check if portfolio exists first to avoid ON CONFLICT issues if constraint is missing
+        const { data: existingPortfolio } = await supabase
             .from('portfolios')
-            .upsert(payload, { onConflict: 'user_id' })
-            .select()
-            .single();
+            .select('id')
+            .eq('user_id', user.id)
+            .single() as { data: { id: string } | null, error: any };
+
+        let rawPortfolio;
+        let portfolioError;
+
+        if (existingPortfolio) {
+            const { data, error } = await supabase
+                .from('portfolios')
+                .update(payload)
+                .eq('id', existingPortfolio.id)
+                .select()
+                .single();
+            rawPortfolio = data;
+            portfolioError = error;
+        } else {
+            const { data, error } = await supabase
+                .from('portfolios')
+                .insert(payload)
+                .select()
+                .single();
+            rawPortfolio = data;
+            portfolioError = error;
+        }
 
         if (portfolioError) throw portfolioError;
         if (!rawPortfolio) throw new Error('Failed to create/update portfolio');

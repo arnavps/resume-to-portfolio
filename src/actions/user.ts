@@ -17,6 +17,12 @@ export async function getUserSubdomain() {
         .eq('user_id', user.id)
         .single();
 
+    if (data) {
+        // console.log("Found portfolio via user_id:", data); 
+    } else {
+        console.log("No portfolio found for user_id:", user.id);
+    }
+
     const portfolio = data as { subdomain: string | null } | null;
 
     if (portfolio?.subdomain) {

@@ -61,7 +61,7 @@ export default async function PortfolioPage({ params }: { params: Promise<{ subd
         skills: {
             frontend: skills?.filter((s: any) => s.category === 'Frontend').map((s: any) => s.skill_name) || [],
             backend: skills?.filter((s: any) => s.category === 'Backend').map((s: any) => s.skill_name) || [],
-            tools: skills?.filter((s: any) => s.category === 'Tools').map((s: any) => s.skill_name) || []
+            tools: skills?.filter((s: any) => s.category === 'Tools' || s.category === 'Other').map((s: any) => s.skill_name) || []
         },
         projects: projects?.map((p: any) => ({
             id: p.id as any,

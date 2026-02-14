@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS public.portfolios (
   published_at TIMESTAMP WITH TIME ZONE,
   last_synced_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id)
 );
 
 -- Projects table
