@@ -15,6 +15,7 @@ export default function SettingsPage() {
     const [user, setUser] = useState<any>(null);
     const [portfolio, setPortfolio] = useState<any>(null);
     const [saving, setSaving] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -70,18 +71,69 @@ export default function SettingsPage() {
         }
     };
 
-    if (!mounted || loading) {
-        return (
-            <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
-                <div className="h-8 w-48 bg-slate-200 rounded"></div>
-                <div className="h-4 w-96 bg-slate-200 rounded"></div>
-                <div className="h-10 w-full bg-slate-200 rounded mt-6"></div>
-            </div>
-        );
-    }
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File size too large. Please upload an image smaller than 2MB.');
+            return;
+        }
+
+        setAvatarUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/upload/avatar', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Upload failed');
+            }
+
+            // Update local state
+            const updatedUser = { ...user, avatar: data.url }; // assuming 'avatar' or 'avatarUrl' in user object
+            // The user object likely expects 'avatar_url' or similar based on DB schema. 
+            // Checking previous code, user state structure seemed loose. 
+            // Let's check how it's used: user?.fullName... it seems we might need to verify the field name. 
+            // In settings/page.tsx line 109, it uses charAt logic fallback. 
+            // Let's assume we want to store it in `avatar_url` or `avatarUrl`.
+            // Looking at SETUP_DB.md, table is `users` with `avatar_url TEXT`.
+            // So we should update `avatar_url`.
+
+            // However, the `user` state here comes from `getSettings` action.
+            // Let's assume we update `avatarUrl` property on the user object if that's what the UI expects, 
+            // or maybe the UI renders `user.avatar_url`.
+            // The current UI DOES NOT render the image yet! It only renders initials:
+            // `{user?.fullName?.charAt(0) || user?.email?.charAt(0)}`
+            // So we need to update the UI to show the image if available.
+
+            setUser({ ...user, avatarUrl: data.url });
+
+            // Persist to DB immediately
+            const { updateProfile } = await import('@/actions/settings');
+            // updateProfile probably takes the whole user object. 
+            // We should make sure it handles avatarUrl.
+            await updateProfile({ ...user, avatarUrl: data.url });
+
+        } catch (error: any) {
+            console.error('Avatar upload error:', error);
+            alert('Failed to upload avatar: ' + error.message);
+        } finally {
+            setAvatarUploading(false);
+            // Reset input
+            e.target.value = '';
+        }
+    };
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+            {/* ... header ... */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
                 <p className="text-slate-500 dark:text-slate-400 mt-2">
@@ -107,17 +159,41 @@ export default function SettingsPage() {
                         <CardContent className="space-y-6">
                             <div className="flex items-center gap-6">
                                 <div className="relative h-24 w-24 rounded-full bg-slate-100 overflow-hidden border-2 border-white shadow-md">
-                                    <div className="flex items-center justify-center h-full w-full text-2xl font-bold text-slate-400">
-                                        {user?.fullName?.charAt(0) || user?.email?.charAt(0)}
-                                    </div>
+                                    {user?.avatarUrl ? (
+                                        <div className="relative w-full h-full">
+                                            {/* Using standard img tag for simplicity with external URLs without configuring next/image domains immediately */}
+                                            <img
+                                                src={user.avatarUrl}
+                                                alt="Avatar"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full w-full text-2xl font-bold text-slate-400">
+                                            {user?.fullName?.charAt(0) || user?.email?.charAt(0)}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
-                                    <Button variant="outline" size="sm" onClick={() => alert('Avatar upload not implemented yet')}>
+                                    <input
+                                        type="file"
+                                        id="avatar-upload"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleAvatarUpload}
+                                        disabled={avatarUploading}
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                                        disabled={avatarUploading}
+                                    >
                                         <Upload className="h-4 w-4 mr-2" />
-                                        Change Avatar
+                                        {avatarUploading ? 'Uploading...' : 'Change Avatar'}
                                     </Button>
                                     <p className="text-xs text-slate-500 mt-2">
-                                        JPG, GIF or PNG. 1MB max.
+                                        JPG, GIF or PNG. 2MB max.
                                     </p>
                                 </div>
                             </div>
