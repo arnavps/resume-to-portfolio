@@ -32,9 +32,11 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
     // Using explicit user object to match previous structure where needed, or just use userId
     const user = { id: userId, email: userEmail };
 
+    type PortfolioUpdate = Database['public']['Tables']['portfolios']['Update'];
+
     try {
         // 1. Upsert Portfolio Metadata
-        const payload: any = {
+        const payload: PortfolioUpdate = {
             user_id: user.id,
             subdomain: user.email?.split('@')[0] || user.id,
             template_id: template,
@@ -53,8 +55,8 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
         let portfolioError;
 
         if (existingPortfolio) {
-            const { data, error } = await supabase
-                .from('portfolios')
+            const { data, error } = await (supabase
+                .from('portfolios') as any)
                 .update(payload)
                 .eq('id', existingPortfolio.id)
                 .select()
@@ -62,8 +64,8 @@ export async function savePortfolio(data: PortfolioData, template: string, theme
             rawPortfolio = data;
             portfolioError = error;
         } else {
-            const { data, error } = await supabase
-                .from('portfolios')
+            const { data, error } = await (supabase
+                .from('portfolios') as any)
                 .insert(payload)
                 .select()
                 .single();
