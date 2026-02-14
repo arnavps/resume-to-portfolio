@@ -14,7 +14,7 @@ const safetySettings = [
 ];
 
 export const geminiPro = genAI.getGenerativeModel({
-    model: 'gemini-pro',
+    model: 'gemini-2.0-flash-001',
     safetySettings,
     generationConfig: {
         temperature: 0.7,
@@ -25,7 +25,7 @@ export const geminiPro = genAI.getGenerativeModel({
 });
 
 export const geminiFlash = genAI.getGenerativeModel({
-    model: 'gemini-pro',
+    model: 'gemini-2.0-flash-001',
     safetySettings,
     generationConfig: {
         temperature: 0.9,
