@@ -13,8 +13,41 @@ const safetySettings = [
     },
 ];
 
-export const geminiPro = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-001',
+const createRetryingModel = (modelName: string, config: any) => {
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        ...config
+    });
+
+    return {
+        ...model,
+        generateContent: async (prompt: any) => {
+            let attempt = 0;
+            const maxAttempts = 3;
+            // Linear backoff: 2s, 4s, 8s or similar. 429s might need longer.
+            // The user saw 33s wait. simple backoff might be insufficient if quota is strict.
+            // But for transient spikes it helps.
+
+            while (attempt < maxAttempts) {
+                try {
+                    return await model.generateContent(prompt);
+                } catch (error: any) {
+                    if (error.status === 429 || error.message?.includes('429')) {
+                        attempt++;
+                        if (attempt === maxAttempts) throw error;
+                        const delay = attempt * 5000; // 5s, 10s
+                        console.log(`Gemini 429 hit. Retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    throw error;
+                }
+            }
+        }
+    } as any; // Type casting to satisfy basic usage
+};
+
+export const geminiPro = createRetryingModel('gemini-2.5-pro', {
     safetySettings,
     generationConfig: {
         temperature: 0.7,
@@ -24,8 +57,7 @@ export const geminiPro = genAI.getGenerativeModel({
     },
 });
 
-export const geminiFlash = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-001',
+export const geminiFlash = createRetryingModel('gemini-2.0-flash-lite-001', {
     safetySettings,
     generationConfig: {
         temperature: 0.9,
