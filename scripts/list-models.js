@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require('fs');
 require('dotenv').config({ path: '.env.local' });
 if (!process.env.GEMINI_API_KEY) {
     require('dotenv').config({ path: '.env' });
@@ -7,36 +8,42 @@ if (!process.env.GEMINI_API_KEY) {
 async function listModels() {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        console.error("GEMINI_API_KEY not found in .env.local");
+        fs.writeFileSync('models_output.txt', "No API key found.");
         return;
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
+    let output = "Fetching available models...\n";
 
-    try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Dummy init to get access to client if needed, but actually we use the client directly usually? 
-        // Wait, SDK doesn't expose listModels directly on genAI instance in all versions?
-        // Let's check documentation pattern or just try to use the direct API via fetch if SDK is obscure.
-        // Actually, newer SDKs might not have listModels helper easily accessible without digging.
-        // Let's use simple fetch to be sure.
+    const candidates = [
+        "gemini-2.0-flash-lite-001",
+        "gemini-2.0-flash-001",
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-001",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash-002",
+        "gemini-1.5-flash-8b",
+        "gemini-1.5-pro",
+        "gemini-1.5-pro-001",
+        "gemini-1.5-pro-latest",
+        "gemini-1.5-pro-002",
+        "gemini-1.0-pro",
+        "gemini-pro"
+    ];
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await response.json();
-
-        if (data.models) {
-            console.log("Available Models:");
-            data.models.forEach(m => {
-                console.log(`- ${m.name}`);
-                if (m.supportedGenerationMethods) {
-                    console.log(`  Methods: ${m.supportedGenerationMethods.join(', ')}`);
-                }
-            });
-        } else {
-            console.log("No models found or error:", data);
+    for (const modelName of candidates) {
+        output += `\nTesting: ${modelName}\n`;
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent("Test");
+            output += `✅ SUCCESS: ${modelName}\n`;
+        } catch (error) {
+            output += `❌ FAILED: ${modelName} - ${error.message.split('\n')[0]}\n`;
         }
-    } catch (error) {
-        console.error("Error listing models:", error);
     }
+
+    fs.writeFileSync('models_output.txt', output);
+    console.log("Done. Check models_output.txt");
 }
 
 listModels();
