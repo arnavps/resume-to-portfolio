@@ -23,7 +23,7 @@ const createRetryingModel = (modelName: string, config: any) => {
         ...model,
         generateContent: async (prompt: any) => {
             let attempt = 0;
-            const maxAttempts = 5; // Increased from 3
+            const maxAttempts = 10; // Increased to handle long waits
 
             while (attempt < maxAttempts) {
                 try {
@@ -34,8 +34,21 @@ const createRetryingModel = (modelName: string, config: any) => {
                         attempt++;
                         if (attempt === maxAttempts) throw error;
 
-                        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
-                        const delay = Math.pow(2, attempt) * 1000;
+                        let delay = Math.pow(2, attempt) * 1000;
+
+                        // Parse retryDelay from error message if available
+                        // Example: "retryDelay":"35s" || "retryDelay": "35.59s"
+                        const match = error.message?.match(/"retryDelay":"(\d+\.?\d*)s"/);
+                        if (match && match[1]) {
+                            const serverDelay = parseFloat(match[1]) * 1000;
+                            if (serverDelay > delay) {
+                                delay = serverDelay + 1000; // Add buffer
+                            }
+                        }
+
+                        // Cap delay at 60s to avoid indefinite hangs
+                        if (delay > 60000) delay = 60000;
+
                         console.warn(`Gemini API error (${error.status || 'unknown'}). Retrying attempt ${attempt}/${maxAttempts} in ${delay}ms...`);
 
                         await new Promise(resolve => setTimeout(resolve, delay));
