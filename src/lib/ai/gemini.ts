@@ -23,20 +23,21 @@ const createRetryingModel = (modelName: string, config: any) => {
         ...model,
         generateContent: async (prompt: any) => {
             let attempt = 0;
-            const maxAttempts = 3;
-            // Linear backoff: 2s, 4s, 8s or similar. 429s might need longer.
-            // The user saw 33s wait. simple backoff might be insufficient if quota is strict.
-            // But for transient spikes it helps.
+            const maxAttempts = 5; // Increased from 3
 
             while (attempt < maxAttempts) {
                 try {
                     return await model.generateContent(prompt);
                 } catch (error: any) {
-                    if (error.status === 429 || error.message?.includes('429')) {
+                    // Check for 429 or 503 (service unavailable)
+                    if (error.status === 429 || error.message?.includes('429') || error.status === 503) {
                         attempt++;
                         if (attempt === maxAttempts) throw error;
-                        const delay = attempt * 5000; // 5s, 10s
-                        console.log(`Gemini 429 hit. Retrying in ${delay}ms...`);
+
+                        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+                        const delay = Math.pow(2, attempt) * 1000;
+                        console.warn(`Gemini API error (${error.status || 'unknown'}). Retrying attempt ${attempt}/${maxAttempts} in ${delay}ms...`);
+
                         await new Promise(resolve => setTimeout(resolve, delay));
                         continue;
                     }
@@ -47,7 +48,7 @@ const createRetryingModel = (modelName: string, config: any) => {
     } as any; // Type casting to satisfy basic usage
 };
 
-export const geminiPro = createRetryingModel('gemini-2.5-pro', {
+export const geminiPro = createRetryingModel('gemini-1.5-pro', { // Switched to 1.5-pro for better stability
     safetySettings,
     generationConfig: {
         temperature: 0.7,
@@ -57,7 +58,7 @@ export const geminiPro = createRetryingModel('gemini-2.5-pro', {
     },
 });
 
-export const geminiFlash = createRetryingModel('gemini-2.0-flash-lite-001', {
+export const geminiFlash = createRetryingModel('gemini-1.5-flash', { // Switched to 1.5-flash for better stability
     safetySettings,
     generationConfig: {
         temperature: 0.9,
