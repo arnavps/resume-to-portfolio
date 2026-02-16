@@ -20,7 +20,7 @@ export async function getProjects() {
     const supabase = createServiceClient();
 
     // First need to find the portfolio ID for this user
-    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     const portfolio = rawPortfolio as { id: string } | null;
 
     if (!portfolio) return []; // No portfolio = no projects yet or just empty
@@ -53,19 +53,19 @@ export async function createProject(data: { title: string; description: string; 
     const supabase = createServiceClient();
 
     // Get/Create Portfolio
-    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     let portfolio = rawPortfolio as { id: string } | null;
 
     if (!portfolio) {
         // Create default portfolio if missing
         const { data: newPortfolio, error: createError } = await supabase.from('portfolios').insert({
             user_id: userId,
-            subdomain: ((await supabase.from('users').select('email').eq('id', userId).single()).data as any)?.email?.split('@')[0] || userId,
+            subdomain: ((await supabase.from('users').select('email').eq('id', userId).maybeSingle()).data as any)?.email?.split('@')[0] || userId,
             template_id: 'modern',
             updated_at: new Date().toISOString()
-        } as any).select().single();
+        } as any).select().maybeSingle();
 
-        if (createError) return { error: 'Failed to create portfolio context' };
+        if (createError || !newPortfolio) return { error: 'Failed to create portfolio context' };
         portfolio = newPortfolio as { id: string };
     }
 
@@ -88,7 +88,7 @@ export async function getExperience() {
     if (!userId) return [];
 
     const supabase = createServiceClient();
-    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     const portfolio = rawPortfolio as { id: string } | null;
     if (!portfolio) return [];
 
@@ -115,7 +115,7 @@ export async function createExperience(data: { role: string; company: string; pe
     if (!userId) return { error: 'Not authenticated' };
 
     const supabase = createServiceClient();
-    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     const portfolio = rawPortfolio as { id: string } | null;
     if (!portfolio) return { error: 'No portfolio found' };
 
@@ -141,7 +141,7 @@ export async function getUserConnections() {
     if (!userId) return null;
 
     const supabase = createServiceClient();
-    const { data: rawUser, error } = await supabase.from('users').select('github_username, linkedin_url').eq('id', userId).single();
+    const { data: rawUser, error } = await supabase.from('users').select('github_username, linkedin_url').eq('id', userId).maybeSingle();
     const user = rawUser as any;
 
     if (error || !user) return null;
@@ -157,7 +157,7 @@ export async function getSkills() {
     if (!userId) return [];
 
     const supabase = createServiceClient();
-    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     const portfolio = rawPortfolio as { id: string } | null;
     if (!portfolio) return [];
 
@@ -192,7 +192,7 @@ export async function createSkill(data: { name: string; category: string; level:
     if (!userId) return { error: 'Not authenticated' };
 
     const supabase = createServiceClient();
-    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    const { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     const portfolio = rawPortfolio as { id: string } | null;
     if (!portfolio) return { error: 'No portfolio found' };
 

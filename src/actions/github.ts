@@ -19,7 +19,7 @@ export async function syncGithubRepositories() {
     const supabase = createServiceClient();
 
     // 1. Get User Info (GitHub Username)
-    const { data: rawUser } = await supabase.from('users').select('github_username').eq('id', userId).single();
+    const { data: rawUser } = await supabase.from('users').select('github_username').eq('id', userId).maybeSingle();
     const user = rawUser as any;
 
     if (!user || !user.github_username) {
@@ -27,7 +27,7 @@ export async function syncGithubRepositories() {
     }
 
     // 2. Get Portfolio ID
-    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     let portfolio = rawPortfolio as any;
 
     if (!portfolio) {
@@ -36,7 +36,7 @@ export async function syncGithubRepositories() {
         let subdomain = user.github_username;
         if (!subdomain) {
             // Fallback to part of email or random string
-            const { data: rawUserEmail } = await supabase.from('users').select('email').eq('id', userId).single();
+            const { data: rawUserEmail } = await supabase.from('users').select('email').eq('id', userId).maybeSingle();
             const userEmail = rawUserEmail as any;
 
             if (userEmail && userEmail.email) {
@@ -54,7 +54,7 @@ export async function syncGithubRepositories() {
             subdomain: subdomain,
             template_id: 'modern',
             updated_at: new Date().toISOString()
-        } as any).select().single();
+        } as any).select().maybeSingle();
 
         if (createError) {
             console.error('Failed to create portfolio during sync:', createError);
@@ -67,7 +67,7 @@ export async function syncGithubRepositories() {
                     subdomain: retrySubdomain,
                     template_id: 'modern',
                     updated_at: new Date().toISOString()
-                } as any).select().single();
+                } as any).select().maybeSingle();
 
                 if (retryError) {
                     return { error: `Failed to create portfolio context: ${retryError.message}` };
@@ -132,7 +132,7 @@ export async function syncGithubRepositories() {
                 .select('id')
                 .eq('portfolio_id', portfolio.id)
                 .eq('source_id', repo.id.toString())
-                .single();
+                .maybeSingle();
 
             const existing = rawExisting as any;
 

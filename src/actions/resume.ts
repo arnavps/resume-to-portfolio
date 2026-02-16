@@ -26,7 +26,8 @@ export async function applyResumeData() {
         .eq('source_type', 'resume')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
     const dataSource = rawDataSource as any;
 
@@ -37,7 +38,7 @@ export async function applyResumeData() {
     const resumeData = dataSource.source_data as any;
 
     // 2. Get Portfolio ID
-    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).single();
+    let { data: rawPortfolio } = await supabase.from('portfolios').select('id').eq('user_id', userId).maybeSingle();
     let portfolio = rawPortfolio as any;
     if (!portfolio) {
         // Create default portfolio if missing (lazy creation)
@@ -46,7 +47,7 @@ export async function applyResumeData() {
             subdomain: ((await supabase.from('users').select('email').eq('id', userId).single()).data as any)?.email?.split('@')[0] || userId,
             template_id: 'modern',
             updated_at: new Date().toISOString()
-        } as any).select().single();
+        } as any).select().maybeSingle();
 
         if (createError) return { error: 'Failed to create portfolio context' };
         portfolio = newPortfolio;
@@ -106,7 +107,7 @@ export async function applyResumeData() {
                     .select('id')
                     .eq('portfolio_id', portfolioId)
                     .ilike('skill_name', skill) // Case insensitive check
-                    .single();
+                    .maybeSingle();
 
                 if (!existing) {
                     console.log(`Adding skill: ${skill}`);
