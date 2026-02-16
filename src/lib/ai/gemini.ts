@@ -48,7 +48,7 @@ const createRetryingModel = (modelName: string, config: any) => {
     } as any; // Type casting to satisfy basic usage
 };
 
-export const geminiPro = createRetryingModel('gemini-1.5-pro-001', { // Specific version
+export const geminiPro = createRetryingModel('gemini-1.5-pro-latest', { // Latest alias
     safetySettings,
     generationConfig: {
         temperature: 0.7,
@@ -58,7 +58,7 @@ export const geminiPro = createRetryingModel('gemini-1.5-pro-001', { // Specific
     },
 });
 
-export const geminiFlash = createRetryingModel('gemini-1.5-flash-001', { // Specific version
+export const geminiFlash = createRetryingModel('gemini-1.5-flash-latest', { // Latest alias
     safetySettings,
     generationConfig: {
         temperature: 0.9,
